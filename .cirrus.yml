@@ -25,13 +25,12 @@ build_template: &BUILD_TEMPLATE
     - mkisofs -output cloud-init.iso -volid cidata -joliet -rock cloud-init/
 
   create_vm_script:
-    - tart delete "$VM_NAME" || true
-    - tart create --linux "$VM_NAME"
-    - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_NAME"/disk.img
+    - tart create --linux "$VM_ID"
+    - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_ID"/disk.img
 
   initialize_vm_script:
     - packer init .
-    - packer build -var vm_name="$VM_NAME" .
+    - packer build -var vm_name="$VM_ID" .
 
   env:
     QCOW2_IMAGE: image.qcow2
@@ -43,18 +42,21 @@ distros_template: &DISTROS_TEMPLATE
     env:
       VM_NAME: "ubuntu"
       VM_RELEASE: "22.04"
+      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
   - name: Debian
     env:
       VM_NAME: "debian"
       VM_RELEASE: "bookworm"
+      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
   - name: Fedora
     env:
       VM_NAME: "fedora"
       VM_RELEASE: "38"
+      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
 
@@ -66,7 +68,7 @@ build_task:
 
   always:
     cleanup_script:
-      - tart delete "$VM_NAME" || true
+      - tart delete "$VM_ID" || true
 
 build_and_release_task:
   only_if: $CIRRUS_CRON != ""
@@ -75,8 +77,8 @@ build_and_release_task:
   << : *BUILD_TEMPLATE
 
   release_script:
-    - tart push "$VM_NAME" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
+    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
 
   always:
     cleanup_script:
-      - tart delete "$VM_NAME" || true
+      - tart delete "$VM_ID" || true
