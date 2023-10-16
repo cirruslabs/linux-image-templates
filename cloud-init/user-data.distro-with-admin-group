@@ -1,0 +1,11 @@
+#cloud-config
+
+users:
+  - name: admin
+    primary_group: admin
+    plain_text_passwd: admin
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: False
+    shell: /bin/bash
+
+ssh_pwauth: True

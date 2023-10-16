@@ -1,0 +1,56 @@
+persistent_worker:
+  labels:
+    name: dev-mini
+  resources:
+    tart-vms: 1
+
+task:
+  matrix:
+    - name: Ubuntu
+      env:
+        VM_NAME: "ubuntu"
+        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+    - name: Debian
+      env:
+        VM_NAME: "debian"
+        URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+    - name: Fedora
+      env:
+        VM_NAME: "fedora"
+        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+
+  install_dependencies_script:
+    - brew install wget qemu cdrtools packer
+
+  download_cloud_image_disk_script:
+    - wget -O "$QCOW2_IMAGE" "$URL" || true
+
+  convert_and_resize_cloud_image_disk_script:
+    - qemu-img convert -p -f qcow2 -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
+    - qemu-img resize "$RAW_IMAGE" 50G
+
+  generate_cloud_init_image_script:
+    - echo "local-hostname: $VM_NAME" > cloud-init/meta-data
+    - cat "$USER_DATA_FIXTURE" > cloud-init/user-data
+    - mkisofs -output cloud-init.iso -volid cidata -joliet -rock cloud-init/
+
+  create_vm_script:
+    - tart delete "$VM_NAME" || true
+    - tart create --linux "$VM_NAME"
+    - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_NAME"/disk.img
+
+  initialize_vm_script:
+    - packer init .
+    - packer build -var vm_name="$VM_NAME" .
+
+  always:
+    cleanup_script:
+      - tart delete "$VM_NAME" || true
+
+  env:
+    QCOW2_IMAGE: image.qcow2
+    RAW_IMAGE: image.raw
+    PACKER_LOG: 1
