@@ -4,24 +4,11 @@ persistent_worker:
   resources:
     tart-vms: 1
 
-task:
-  matrix:
-    - name: Ubuntu
-      env:
-        VM_NAME: "ubuntu"
-        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
-    - name: Debian
-      env:
-        VM_NAME: "debian"
-        URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
-    - name: Fedora
-      env:
-        VM_NAME: "fedora"
-        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+env:
+  TART_REGISTRY_USERNAME: fkorotkov # GitHub supports only PATs
+  TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
 
+build_template: &BUILD_TEMPLATE
   install_dependencies_script:
     - brew install wget qemu cdrtools packer
 
@@ -46,11 +33,50 @@ task:
     - packer init .
     - packer build -var vm_name="$VM_NAME" .
 
-  always:
-    cleanup_script:
-      - tart delete "$VM_NAME" || true
-
   env:
     QCOW2_IMAGE: image.qcow2
     RAW_IMAGE: image.raw
     PACKER_LOG: 1
+
+distros_template: &DISTROS_TEMPLATE
+  - name: Ubuntu
+    env:
+      VM_NAME: "ubuntu"
+      VM_RELEASE: "22.04"
+      URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+      USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+  - name: Debian
+    env:
+      VM_NAME: "debian"
+      VM_RELEASE: "bookworm"
+      URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
+      USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+  - name: Fedora
+    env:
+      VM_NAME: "fedora"
+      VM_RELEASE: "38"
+      URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
+      USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+
+build_task:
+  only_if: $CIRRUS_CRON == ""
+
+  matrix: *DISTROS_TEMPLATE
+  << : *BUILD_TEMPLATE
+
+  always:
+    cleanup_script:
+      - tart delete "$VM_NAME" || true
+
+build_and_release_task:
+  only_if: $CIRRUS_CRON != ""
+
+  matrix: *DISTROS_TEMPLATE
+  << : *BUILD_TEMPLATE
+
+  release_script:
+    - tart push "$VM_NAME" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
+
+  always:
+    cleanup_script:
+      - tart delete "$VM_NAME" || true
