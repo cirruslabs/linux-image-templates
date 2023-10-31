@@ -5,6 +5,8 @@ persistent_worker:
     tart-vms: 1
 
 env:
+  PACKER_LOG: 1
+  VM_ID: "task-${CIRRUS_TASK_ID}"
   TART_REGISTRY_USERNAME: fkorotkov # GitHub supports only PATs
   TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
 
@@ -35,33 +37,30 @@ build_template: &BUILD_TEMPLATE
   env:
     QCOW2_IMAGE: image.qcow2
     RAW_IMAGE: image.raw
-    PACKER_LOG: 1
 
 distros_template: &DISTROS_TEMPLATE
   - name: Ubuntu
     env:
       VM_NAME: "ubuntu"
       VM_RELEASE: "22.04"
-      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
   - name: Debian
     env:
       VM_NAME: "debian"
       VM_RELEASE: "bookworm"
-      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
   - name: Fedora
     env:
       VM_NAME: "fedora"
       VM_RELEASE: "38"
-      VM_ID: "build-${CIRRUS_BUILD_ID}-${VM_NAME}"
       URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
       USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
 
 build_task:
   only_if: $CIRRUS_CRON == ""
+  alias: build
 
   matrix: *DISTROS_TEMPLATE
   << : *BUILD_TEMPLATE
@@ -72,12 +71,49 @@ build_task:
 
 build_and_release_task:
   only_if: $CIRRUS_CRON != ""
+  alias: build-and-release
 
   matrix: *DISTROS_TEMPLATE
   << : *BUILD_TEMPLATE
 
   release_script:
     - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
+
+  always:
+    cleanup_script:
+      - tart delete "$VM_ID" || true
+
+build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
+  customize_vm_script:
+    - packer init "$CUSTOMIZATION_PATH"
+    - packer build -var vm_name="$VM_ID" "$CUSTOMIZATION_PATH"
+
+customizations_template: &CUSTOMIZATIONS_TEMPLATE
+  - name: Ubuntu with Docker
+    env:
+      CUSTOMIZATION_PATH: "customizations/ubuntu-with-docker"
+      CUSTOMIZATION_ARTIFACT: "ghcr.io/cirruslabs/ubuntu:docker"
+
+build_customized_task:
+  only_if: $CIRRUS_CRON == ""
+  depends_on: build
+
+  matrix: *CUSTOMIZATIONS_TEMPLATE
+  << : *BUILD_CUSTOMIZED_TEMPLATE
+
+  always:
+    cleanup_script:
+      - tart delete "$VM_ID" || true
+
+build_and_release_customized_task:
+  only_if: $CIRRUS_CRON != ""
+  depends_on: build-and-release
+
+  matrix: *CUSTOMIZATIONS_TEMPLATE
+  << : *BUILD_CUSTOMIZED_TEMPLATE
+
+  release_script:
+    - tart push "$VM_ID" "$CUSTOMIZATION_ARTIFACT"
 
   always:
     cleanup_script:
