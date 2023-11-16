@@ -120,6 +120,7 @@ build_and_release_customized_task:
       - tart delete "$VM_ID" || true
 
 cloud_init_images_task:
+  name: Cloud Init images
   generate_script:
     - echo "local-hostname: linux" > cloud-init/meta-data
     - cat cloud-init/user-data.distro-with-admin-group > cloud-init/user-data
