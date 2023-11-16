@@ -118,3 +118,13 @@ build_and_release_customized_task:
   always:
     cleanup_script:
       - tart delete "$VM_ID" || true
+
+cloud_init_images_task:
+  generate_script:
+    - echo "local-hostname: linux" > cloud-init/meta-data
+    - cat cloud-init/user-data.distro-with-admin-group > cloud-init/user-data
+    - mkisofs -output cloud-init-distro-with-admin-group.iso -volid cidata -joliet -rock cloud-init/
+    - cat cloud-init/user-data.distro-without-admin-group > cloud-init/user-data
+    - mkisofs -output cloud-init-distro-without-admin-group.iso -volid cidata -joliet -rock cloud-init/
+  cloud_init_artifacts:
+    path: "*.iso"
