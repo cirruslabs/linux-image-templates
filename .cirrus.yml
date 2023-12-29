@@ -17,9 +17,8 @@ build_template: &BUILD_TEMPLATE
   download_cloud_image_disk_script:
     - wget -O "$QCOW2_IMAGE" "$URL" || true
 
-  convert_and_resize_cloud_image_disk_script:
+  convert_cloud_image_disk_script:
     - qemu-img convert -p -f qcow2 -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
-    - qemu-img resize "$RAW_IMAGE" 50G
 
   generate_cloud_init_image_script:
     - echo "local-hostname: $VM_NAME" > cloud-init/meta-data
