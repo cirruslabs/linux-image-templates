@@ -24,7 +24,11 @@ build {
 
   provisioner "shell" {
     inline = [
-      "uname -a"
+      # Disable Cloud Init[1] to avoid wasting time
+      # trying to crawl non-existent metadata
+      #
+      # [1]: https://cloudinit.readthedocs.io/en/latest/howto/disable_cloud_init.html#method-1-text-file
+      "sudo touch /etc/cloud/cloud-init.disabled"
     ]
   }
 }

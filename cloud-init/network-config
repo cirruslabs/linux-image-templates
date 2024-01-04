@@ -1,0 +1,9 @@
+#cloud-config
+
+network:
+  version: 2
+  ethernets:
+    all:
+      match:
+        name: en*
+      dhcp4: true
