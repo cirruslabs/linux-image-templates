@@ -24,11 +24,14 @@ build {
 
   provisioner "shell" {
     inline = [
-      # Disable Cloud Init[1] to avoid wasting time
-      # trying to crawl non-existent metadata
+      # We can't disable the Cloud Init because otherwise we loose the growpart functionality[1],
+      # so disable all data sources instead.
       #
-      # [1]: https://cloudinit.readthedocs.io/en/latest/howto/disable_cloud_init.html#method-1-text-file
-      "sudo touch /etc/cloud/cloud-init.disabled"
+      # Also see [2] for more details.
+      #
+      # [1]: https://cloudinit.readthedocs.io/en/latest/reference/modules.html#growpart
+      # [2]: https://github.com/cirruslabs/linux-image-templates/pull/8
+      "echo 'datasource_list: [ None ]' | sudo tee /etc/cloud/cloud.cfg.d/99_cirruslabs.cfg"
     ]
   }
 }
