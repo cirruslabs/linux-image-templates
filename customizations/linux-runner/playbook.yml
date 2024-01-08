@@ -226,6 +226,7 @@
     - name: install Amazon ECR Docker Credential Helper
       apt:
         name: amazon-ecr-credential-helper
+        install_recommends: false
 
     - name: install build tools required for CPAN
       apt:
