@@ -88,10 +88,11 @@ build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
     - packer build -var vm_name="$VM_ID" "$CUSTOMIZATION_PATH"
 
 customizations_template: &CUSTOMIZATIONS_TEMPLATE
-  - name: Ubuntu with Docker
+  - name: Linux Runner
     env:
-      CUSTOMIZATION_PATH: "customizations/ubuntu-with-docker"
-      CUSTOMIZATION_ARTIFACT: "ghcr.io/cirruslabs/ubuntu:docker"
+      CUSTOMIZATION_PATH: "customizations/linux-runner"
+      CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/linux-runner-arm"
+      CUSTOMIZATION_VERSION: "22.04"
 
 build_customized_task:
   only_if: $CIRRUS_CRON == ""
@@ -112,7 +113,7 @@ build_and_release_customized_task:
   << : *BUILD_CUSTOMIZED_TEMPLATE
 
   release_script:
-    - tart push "$VM_ID" "$CUSTOMIZATION_ARTIFACT"
+    - tart push "$VM_ID" "${CUSTOMIZATION_IMAGE}:latest" "${CUSTOMIZATION_IMAGE}:${CUSTOMIZATION_VERSION}"
 
   always:
     cleanup_script:
