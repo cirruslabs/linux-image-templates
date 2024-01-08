@@ -84,8 +84,9 @@ build_and_release_task:
 
 build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
   customize_vm_script:
-    - packer init "$CUSTOMIZATION_PATH"
-    - packer build -var vm_name="$VM_ID" "$CUSTOMIZATION_PATH"
+    - cd "$CUSTOMIZATION_PATH"
+    - packer init
+    - packer build -var vm_name="$VM_ID"
 
 customizations_template: &CUSTOMIZATIONS_TEMPLATE
   - name: Linux Runner
