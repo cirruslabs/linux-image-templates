@@ -85,6 +85,8 @@ build_and_release_task:
 build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
   install_ansible_script:
     - brew install ansible
+  pull_newest_ubuntu_image_script:
+    - tart pull ghcr.io/cirruslabs/ubuntu:latest
   customize_vm_script:
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
