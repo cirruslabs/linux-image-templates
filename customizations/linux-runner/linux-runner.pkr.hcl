@@ -47,4 +47,8 @@ build {
       "sudo docker run --privileged --rm tonistiigi/binfmt --install all",
     ]
   }
+
+  provisioner "shell" {
+    script = "install-actions-runner.sh"
+  }
 }
