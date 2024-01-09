@@ -96,7 +96,7 @@ customizations_template: &CUSTOMIZATIONS_TEMPLATE
   - name: Linux Runner
     env:
       CUSTOMIZATION_PATH: "customizations/linux-runner"
-      CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/linux-runner-arm"
+      CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-arm64"
       CUSTOMIZATION_VERSION: "22.04"
 
 build_customized_task:
