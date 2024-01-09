@@ -83,6 +83,8 @@ build_and_release_task:
       - tart delete "$VM_ID" || true
 
 build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
+  install_ansible:
+    - brew install ansible
   customize_vm_script:
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
