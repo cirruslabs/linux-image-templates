@@ -83,15 +83,21 @@ build_and_release_task:
       - tart delete "$VM_ID" || true
 
 build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
+  install_ansible_script:
+    - brew install ansible
+  pull_newest_ubuntu_image_script:
+    - tart pull ghcr.io/cirruslabs/ubuntu:latest
   customize_vm_script:
-    - packer init "$CUSTOMIZATION_PATH"
-    - packer build -var vm_name="$VM_ID" "$CUSTOMIZATION_PATH"
+    - cd "$CUSTOMIZATION_PATH"
+    - packer init .
+    - packer build -var vm_name="$VM_ID" .
 
 customizations_template: &CUSTOMIZATIONS_TEMPLATE
-  - name: Ubuntu with Docker
+  - name: Linux Runner
     env:
-      CUSTOMIZATION_PATH: "customizations/ubuntu-with-docker"
-      CUSTOMIZATION_ARTIFACT: "ghcr.io/cirruslabs/ubuntu:docker"
+      CUSTOMIZATION_PATH: "customizations/linux-runner"
+      CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-arm64"
+      CUSTOMIZATION_VERSION: "22.04"
 
 build_customized_task:
   only_if: $CIRRUS_CRON == ""
@@ -112,7 +118,7 @@ build_and_release_customized_task:
   << : *BUILD_CUSTOMIZED_TEMPLATE
 
   release_script:
-    - tart push "$VM_ID" "$CUSTOMIZATION_ARTIFACT"
+    - tart push "$VM_ID" "${CUSTOMIZATION_IMAGE}:latest" "${CUSTOMIZATION_IMAGE}:${CUSTOMIZATION_VERSION}"
 
   always:
     cleanup_script:

@@ -1,0 +1,647 @@
+- name: install software available in the ubuntu-22.04 runner image
+  hosts: default
+  become: true
+
+  tasks:
+    - name: update APT cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    # Language and Runtime[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#language-and-runtime
+
+    - name: install Bash
+      apt:
+        name: bash
+
+    - name: install clang, clang-format and clang-tidy
+      apt:
+        name:
+          - clang
+          - clang-format
+          - clang-tidy
+
+    - name: install Dash
+      apt:
+        name: dash
+
+    - name: install GNU C++ and Fortran
+      apt:
+        name:
+          - g++
+          - gfortran
+
+    - name: install Julia
+      snap:
+        name: julia
+        classic: true
+
+    # Skip installing Kotlin because it's not available on arm64 Linux yet[1]
+    #
+    # [1]: https://youtrack.jetbrains.com/issue/KT-36871/Support-Aarch64-Linux-as-a-host-for-the-Kotlin-Native
+
+    - name: install APT transport for downloading packages via HTTPS and common X.509 certificates
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+
+    - name: install GnuPG (required by the apt_key module)
+      apt:
+        name: gpg
+
+    - name: add Mono key
+      apt_key:
+        id: 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+        keyserver: "hkp://keyserver.ubuntu.com:80"
+        keyring: /etc/apt/trusted.gpg.d/mono.gpg
+
+    - name: add Mono repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/mono.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main"
+        filename: mono
+
+    - name: install Mono and MSBuild
+      apt:
+        name:
+          - mono-devel
+          - msbuild
+
+    - name: add Nodesource key
+      apt_key:
+        id: 6F71F525282841EEDAF851B42F59B5F99B1BE0B4
+        url: "https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key"
+        keyring: /etc/apt/trusted.gpg.d/nodesource.gpg
+
+    - name: add Nodesource repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main"
+        filename: nodesource
+
+    - name: install Node.js
+      apt:
+        name: nodejs
+
+    - name: install Perl
+      apt:
+        name: perl
+
+    - name: install Python
+      apt:
+        name:
+          - python3
+          - python3-dev
+          - python3-venv
+
+    - name: install Ruby
+      apt:
+        name:
+          - ruby
+          - ruby-dev
+
+    # Skip installing Swift because no Debian/Snap package is available[1]
+    #
+    # [1]: https://www.swift.org/install/linux/
+
+    # Package Management[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#package-management
+
+    # >Ubuntu 22.04 ship with CPAN installed by default. To compile and install package from CPAN
+    # >you may also need to install build tools: [...][1]
+    #
+    # [1]: https://innovativeinnovation.github.io/ubuntu-setup/perl/cpan.html
+    - name: install build tools required for CPAN
+      apt:
+        name: build-essential
+
+    - name: add Balto key for Helm
+      apt_key:
+        id: 81BF832E2F19CD2AA0471959294AC4827C1A168A
+        url: "https://baltocdn.com/helm/signing.asc"
+        keyring: /etc/apt/trusted.gpg.d/balto-helm.gpg
+
+    - name: add Balto Helm repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/balto-helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
+        filename: balto-helm
+
+    - name: install Helm
+      apt:
+        name: helm
+
+    # Skip installing Homebrew as it's not supported on arm64 Linux yet[1]
+    #
+    # [1]: https://docs.brew.sh/Homebrew-on-Linux#arm-unsupported
+
+    # Skip installing Miniconda as it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://docs.conda.io/projects/miniconda/en/latest/
+
+    # Skip installing NPM as it's already provided by the Node.js
+
+    - name: install NuGet
+      apt:
+        name: nuget
+
+    - name: install Pip
+      apt:
+        name: python3-pip
+
+    - name: install Pipx
+      pip:
+        name: pipx
+
+    - name: install RubyGems
+      apt:
+        name: ruby-rubygems
+
+    # Skip installing Vcpkg because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://github.com/microsoft/vcpkg?#quick-start-unix
+
+    # Yarn is already shipped with NPM, so we only need to enable the Corepack[1]
+    #
+    # [1]: https://yarnpkg.com/getting-started/install
+    - name: install Yarn
+      command: corepack enable
+
+    # Project Management[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#project-management
+
+    - name: install Lerna
+      npm:
+        name: lerna
+        global: true
+
+    - name: install Maven
+      apt:
+        name: maven
+
+    # Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#tools
+
+    - name: install Ansible
+      community.general.pipx:
+        name: ansible
+        install_deps: true
+
+    # Skip installing apt-fast for now because it brings no
+    # new functionality, it's just an optimization for APT
+
+    # Skip installing AzCopy because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azcopy-v10#download-azcopy
+
+    - name: install Bazelisk to install Bazel
+      npm:
+        name: "@bazel/bazelisk"
+        global: true
+
+    - name: install Bazel
+      command: bazel
+
+    # Skip installing Bicep (language for deploying Azure resources)
+    # because it has no .deb/Snap package(s) and can be easily
+    # installed using the Azure CLI[1]
+    #
+    # [1]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/install
+
+    - name: install Buildah
+      apt:
+        name: buildah
+
+    - name: install CMake
+      apt:
+        name: cmake
+
+    # Skip installing CodeQL Action Bundle because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://github.com/github/codeql-action
+
+    - name: install Amazon ECR Docker Credential Helper
+      apt:
+        name: amazon-ecr-credential-helper
+        install_recommends: false
+
+    - name: install build tools required for CPAN
+      apt:
+        name: build-essential
+
+    - name: add Docker key
+      apt_key:
+        id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+        url: "https://download.docker.com/linux/ubuntu/gpg"
+        keyring: /etc/apt/trusted.gpg.d/docker.gpg
+
+    - name: add Docker repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable"
+        filename: docker
+
+    - name: install Docker Compose plugin
+      apt:
+        name: docker-compose-plugin
+
+    - name: install Docker Buildx plugin
+      apt:
+        name: docker-buildx-plugin
+
+    - name: install Docker Client
+      apt:
+        name: docker-ce-cli
+
+    - name: install Docker Server
+      apt:
+        name:
+          - docker-ce
+          - containerd.io
+
+    # Skip installing Fastlane
+    #
+    # Most likely is at https://github.com/fastlane/fastlane/,
+    # distributed as RubyGems package, so should be easy to install.
+
+    - name: install Git, Git LFS and git-ftp
+      apt:
+        name:
+          - git
+          - git-lfs
+          - git-ftp
+
+    - name: install haveged
+      apt:
+        name: haveged
+
+    # Not installing Heroku because it has no .deb packages[1] and the Snap package
+    # was last updated almost 2 years ago (in 2022)[2]
+    #
+    # [1]: https://devcenter.heroku.com/articles/heroku-cli
+    # [2]: https://snapcraft.io/heroku
+
+    - name: install jq
+      apt:
+        name: jq
+
+    # Not installing kind because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-a-package-manager
+
+    - name: install kubectl
+      snap:
+        name: kubectl
+        classic: true
+
+    # Not installing Kustomize because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://kubectl.docs.kubernetes.io/installation/kustomize/
+
+    # Not installing Leiningen because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://leiningen.org/#install
+
+    - name: install MediaInfo
+      apt:
+        name: mediainfo
+
+    - name: install Mercurial
+      apt:
+        name: mercurial
+
+    # Not installing minikube because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://minikube.sigs.k8s.io/docs/start/
+
+    # Not installing n because it doesn't seem to be very popular
+    # and can be easily installed via the npm[1]
+    #
+    # [1]: https://www.npmjs.com/package/n
+
+    # Not installing Newman because it doesn't seem to be very popular
+    # and can be easily installed via the npm[1]
+    #
+    # [1]: https://github.com/actions/runner-images/issues/1063
+
+    # Not installing nvm because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://github.com/nvm-sh/nvm#installing-and-updating
+
+    - name: install OpenSSL
+      apt:
+        name: openssl
+
+    - name: add HashiCorp key
+      apt_key:
+        id: 798AEC654E5C15428C8E42EEAA16FCBCA621E701
+        url: "https://apt.releases.hashicorp.com/gpg"
+        keyring: /etc/apt/trusted.gpg.d/hashicorp.gpg
+
+    - name: add HashiCorp repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/hashicorp.gpg] https://apt.releases.hashicorp.com jammy main"
+        filename: hashicorp
+
+    - name: install Packer
+      apt:
+        name: packer
+
+    # Not installing Parcel because it can be easily installed via npm[1]
+    #
+    # [1]: https://parceljs.org/getting-started/webapp/#installation
+
+    - name: install Podman
+      apt:
+        name: podman
+
+    # Not installing Pulumi because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://www.pulumi.com/docs/install/
+
+    - name: install R
+      apt:
+        name: r-base
+        install_recommends: false
+
+    - name: install skopeo
+      apt:
+        name: skopeo
+
+    - name: install Sphinx Open Source Search Server
+      apt:
+        name: sphinxsearch
+
+    - name: install Subversion
+      apt:
+        name: subversion
+
+    - name: install Terraform
+      apt:
+        name: terraform
+
+    # Not installing yamllint[1] because it doesn't seem to be very popular
+    # and can be easily installed via pip.
+    #
+    # [1]: https://github.com/adrienverge/yamllint
+
+    - name: install yq
+      snap:
+        name: yq
+
+    - name: install zstd
+      apt:
+        name: zstd
+
+    # Not installing Alibaba Cloud CLI because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://www.alibabacloud.com/help/en/alibaba-cloud-cli/latest/linux
+
+    - name: install AWS CLI
+      snap:
+        name: aws-cli
+        classic: true
+
+    - name: install AWS CLI Session Manager plugin
+      apt:
+        deb: "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb"
+
+    # Not installing the AWS SAM CLI because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html
+
+    - name: add Microsoft key
+      apt_key:
+        id: BC528686B50D79E339D3721CEB3E94ADBE1229CF
+        url: "https://packages.microsoft.com/keys/microsoft.asc"
+        keyring: /etc/apt/trusted.gpg.d/microsoft.gpg
+
+    - name: add Microsoft repository for Azure CLI
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/microsoft.gpg] https://packages.microsoft.com/repos/azure-cli/ jammy main"
+        filename: microsoft-azure-cli
+
+    - name: install Azure CLI
+      apt:
+        name: azure-cli
+
+    # Not installing Azure DevOps CLI because it seems that
+    # it can be easily enabled through the Azure CLI itself
+
+    - name: add GitHub CLI key
+      apt_key:
+        id: 2C6106201985B60E6C7AC87323F3D4EA75716059
+        url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
+        keyring: /etc/apt/trusted.gpg.d/github-cli.gpg
+
+    - name: add GitHub CLI repository
+      apt_repository:
+        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/github-cli.gpg] https://cli.github.com/packages stable main"
+        filename: github-cli
+
+    - name: install GitHub CLI
+      apt:
+        name: gh
+
+    - name: install Google Cloud CLI
+      snap:
+        name: google-cloud-cli
+        classic: true
+
+    # Not installing the Netlify CLI because it can be easily installed via npm[1]
+    #
+    # [1]: https://docs.netlify.com/cli/get-started/
+
+    # Not installing the OpenShift CLI because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://docs.openshift.com/container-platform/4.14/cli_reference/openshift_cli/getting-started-cli.html
+
+    # Not installing ORAS because its Snap package seems to be lagging behind GitHub releases
+    # and was published by an individual person, which is somewhat suspicious[1]
+    #
+    # [1]: https://oras.land/docs/installation#snap
+
+    # Not installing Vercel CLI because it can be easily installed via npm
+
+    # Java[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#java
+    - name: install Java
+      apt:
+        name: default-jdk
+
+    # PHP Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#php-tools
+    - name: install PHP
+      apt:
+        name: php
+
+    # Not installing Composer because it has no .deb/Snap package(s)[1]
+    #
+    # [1]: https://getcomposer.org/doc/00-intro.md#installation-linux-unix-macos
+
+    # Not installing PHPUnit because it can be easily installed via Composer[1]
+    #
+    # [1]: https://docs.phpunit.de/en/9.6/installation.html
+
+    # Haskell Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#haskell-tools
+
+    # Not installing anything Haskell-related because let's wait for someone to ask for this.
+
+    # Rust Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#rust-tools
+
+    # Not installing anything Rust-related because the Rustup team
+    # has completely neglected the packaging part of the whole story[1][2].
+    #
+    # Installing Rust from the official Ubuntu is kinda meh, because
+    # the version is always lagging behind the Rustup's one.
+    #
+    # [1]: https://github.com/rust-lang/rustup/issues/800
+    # [2]: https://github.com/rust-lang/rustup/issues/1144
+
+    # Browsers and Drivers[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#browsers-and-drivers
+
+    # Not installing anything Browser and Driver-related.
+
+    # .NET Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#net-tools
+
+    # Not installing anything .NET-related.
+
+    # Databases[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#databases
+
+    - name: install SQLite
+      apt:
+        name:
+          - sqlite3
+          - libsqlite3-dev
+
+    # Not installing PostgreSQL, MySQL and MS SQL because no one had asked us to.
+
+    # Cached Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-tools
+
+    # Not caching any tools.
+
+    # PowerShell Tools[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#powershell-tools
+
+    # Not installing any PowerShell-related tools until someone asks us to.
+
+    # Web Servers[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#web-servers
+
+    # Not installing any web-servers.
+
+    # Android[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#android
+
+    # Not installing anything Android-related until someone asks us to.
+
+    # Cached Docker images[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-images
+
+    # Not caching any Docker images.
+
+    # Installed apt packages[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-images
+    - apt:
+        name:
+          - acl
+          - aria2
+          - autoconf
+          - automake
+          - binutils
+          - bison
+          - brotli
+          - bzip2
+          - coreutils
+          - curl
+          - dbus
+          - dnsutils
+          - dpkg
+          - dpkg-dev
+          - fakeroot
+          - file
+          - findutils
+          - flex
+          - fonts-noto-color-emoji
+          - ftp
+          - gcc
+          - gnupg2
+          - imagemagick
+          - iproute2
+          - iputils-ping
+          - libc++-dev
+          - libc++abi-dev
+          - libc6-dev
+          - libcurl4
+          - libgbm-dev
+          - libgconf-2-4
+          - libgsl-dev
+          - libgtk-3-0
+          - libmagic-dev
+          - libmagickcore-dev
+          - libmagickwand-dev
+          - libsecret-1-dev
+          - libssl-dev
+          - libtool
+          - libunwind8
+          - libxkbfile-dev
+          - libxss1
+          - libyaml-dev
+          - locales
+          - lz4
+          - m4
+          - make
+          - net-tools
+          - netcat
+          - openssh-client
+          - p7zip-full
+          - p7zip-rar
+          - parallel
+          - pass
+          - patchelf
+          - pigz
+          - pkg-config
+          - pollinate
+          - python-is-python3
+          - rpm
+          - rsync
+          - shellcheck
+          - ssh
+          - sshpass
+          - sudo
+          - swig
+          - tar
+          - telnet
+          - texinfo
+          - time
+          - tk
+          - tzdata
+          - unzip
+          - upx
+          - wget
+          - xorriso
+          - xvfb
+          - xz-utils
+          - zip
+          - zsync
