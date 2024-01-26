@@ -27,25 +27,17 @@ task:
         VM_ARCH: "arm64"
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
-    - name: Linux Runner (arm64)
+    - name: Linux Runner ($VM_ARCH)
       env:
         VM_NAME: "ubuntu"
         VM_RELEASE: "22.04"
-        VM_ARCH: "arm64"
-        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+        matrix:
+          - VM_ARCH: "arm64"
+          - VM_ARCH: "amd64"
+        URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner"
-        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-arm64"
-        CUSTOMIZATION_VERSION: "22.04"
-    - name: Linux Runner (amd64)
-      env:
-        VM_NAME: "ubuntu"
-        VM_RELEASE: "22.04"
-        VM_ARCH: "amd64"
-        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
-        CUSTOMIZATION_PATH: "customizations/linux-runner"
-        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-amd64"
+        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-$VM_ARCH"
         CUSTOMIZATION_VERSION: "22.04"
 
   persistent_worker:
