@@ -2,7 +2,7 @@ packer {
   required_plugins {
     tart = {
       source  = "github.com/cirruslabs/tart"
-      version = ">= 1.6.1"
+      version = ">= 1.7.0"
     }
     ansible = {
       source  = "github.com/hashicorp/ansible"

@@ -40,7 +40,6 @@ task:
         CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-$VM_ARCH"
         CUSTOMIZATION_VERSION: "22.04"
 
-  execution_lock: linux-image-templates-$VM_ARCH
   persistent_worker:
     labels:
       arch: $VM_ARCH
@@ -76,6 +75,7 @@ task:
 
   release_script:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
+    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
 
   always:
     cleanup_script:
