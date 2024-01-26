@@ -10,7 +10,15 @@
 #
 set -euo pipefail
 
-export RUNNER_ARCH=$(uname -m)
+arch=$(uname -m)
+if [ "$arch" = "x86_64" ]; then
+    RUNNER_ARCH="x64"
+elif [ "$arch" = "arm64" ]; then
+    RUNNER_ARCH="arm64"
+else
+    echo "Unknown architecture: $arch"
+    exit 1
+fi
 
 DOWNLOAD_URL=$(curl -sS 'https://api.github.com/repos/actions/runner/releases/latest' | jq --raw-output --arg RUNNER_ARCH "$RUNNER_ARCH" '.assets[] | select(.name | test("actions-runner-linux-\($RUNNER_ARCH)-[0-9.]+.tar.gz")) | .browser_download_url')
 
