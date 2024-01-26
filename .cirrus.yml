@@ -76,14 +76,13 @@ task:
     - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_ID"/disk.img
 
   initialize_vm_script:
-    - [ -z "$CUSTOMIZATION_PATH" ] && { echo "Nothing to customize"; exit 0; }
+    - '[ -z "$CUSTOMIZATION_PATH" ] && { echo "Nothing to customize"; exit 0; }'
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
     - packer build -var vm_name="$VM_ID" .
 
   release_script:
-    - [ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }
-    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
+    - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
 
   always:
     cleanup_script:
