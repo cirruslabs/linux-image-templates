@@ -1,18 +1,64 @@
-persistent_worker:
-  labels:
-    name: dev-mini
-  resources:
-    tart-vms: 1
-
 env:
   PACKER_LOG: 1
   VM_ID: "task-${CIRRUS_TASK_ID}"
   TART_REGISTRY_USERNAME: fkorotkov # GitHub supports only PATs
   TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
 
-build_template: &BUILD_TEMPLATE
+task:
+  matrix:
+    - name: Ubuntu
+      env:
+        VM_NAME: "ubuntu"
+        VM_RELEASE: "22.04"
+        VM_ARCH: "arm64"
+        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+    - name: Debian
+      env:
+        VM_NAME: "debian"
+        VM_RELEASE: "bookworm"
+        VM_ARCH: "arm64"
+        URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+    - name: Fedora
+      env:
+        VM_NAME: "fedora"
+        VM_RELEASE: "38"
+        VM_ARCH: "arm64"
+        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+    - name: Linux Runner (arm64)
+      env:
+        VM_NAME: "ubuntu"
+        VM_RELEASE: "22.04"
+        VM_ARCH: "arm64"
+        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+        CUSTOMIZATION_PATH: "customizations/linux-runner"
+        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-arm64"
+        CUSTOMIZATION_VERSION: "22.04"
+    - name: Linux Runner (amd64)
+      env:
+        VM_NAME: "ubuntu"
+        VM_RELEASE: "22.04"
+        VM_ARCH: "amd64"
+        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+        CUSTOMIZATION_PATH: "customizations/linux-runner"
+        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-amd64"
+        CUSTOMIZATION_VERSION: "22.04"
+
+  persistent_worker:
+    labels:
+      arch: $VM_ARCH
+    resources:
+      tart-vms: 1
+  env:
+    QCOW2_IMAGE: image.qcow2
+    RAW_IMAGE: image.raw
+
   install_dependencies_script:
-    - brew install wget qemu cdrtools packer
+    - brew install wget qemu cdrtools packer ansible
 
   download_cloud_image_disk_script:
     - wget -O "$QCOW2_IMAGE" "$URL" || true
@@ -30,95 +76,14 @@ build_template: &BUILD_TEMPLATE
     - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_ID"/disk.img
 
   initialize_vm_script:
-    - packer init .
-    - packer build -var vm_name="$VM_ID" .
-
-  env:
-    QCOW2_IMAGE: image.qcow2
-    RAW_IMAGE: image.raw
-
-distros_template: &DISTROS_TEMPLATE
-  - name: Ubuntu
-    env:
-      VM_NAME: "ubuntu"
-      VM_RELEASE: "22.04"
-      URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
-      USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
-  - name: Debian
-    env:
-      VM_NAME: "debian"
-      VM_RELEASE: "bookworm"
-      URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
-      USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
-  - name: Fedora
-    env:
-      VM_NAME: "fedora"
-      VM_RELEASE: "38"
-      URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
-      USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
-
-build_task:
-  only_if: $CIRRUS_CRON == ""
-  alias: build
-
-  matrix: *DISTROS_TEMPLATE
-  << : *BUILD_TEMPLATE
-
-  always:
-    cleanup_script:
-      - tart delete "$VM_ID" || true
-
-build_and_release_task:
-  only_if: $CIRRUS_CRON != ""
-  alias: build-and-release
-
-  matrix: *DISTROS_TEMPLATE
-  << : *BUILD_TEMPLATE
-
-  release_script:
-    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
-
-  always:
-    cleanup_script:
-      - tart delete "$VM_ID" || true
-
-build_customized_template: &BUILD_CUSTOMIZED_TEMPLATE
-  install_ansible_script:
-    - brew install ansible
-  pull_newest_ubuntu_image_script:
-    - tart pull ghcr.io/cirruslabs/ubuntu:latest
-  customize_vm_script:
+    - [ -z "$CUSTOMIZATION_PATH" ] && { echo "Nothing to customize"; exit 0; }
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
     - packer build -var vm_name="$VM_ID" .
 
-customizations_template: &CUSTOMIZATIONS_TEMPLATE
-  - name: Linux Runner
-    env:
-      CUSTOMIZATION_PATH: "customizations/linux-runner"
-      CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-arm64"
-      CUSTOMIZATION_VERSION: "22.04"
-
-build_customized_task:
-  only_if: $CIRRUS_CRON == ""
-  depends_on: build
-
-  matrix: *CUSTOMIZATIONS_TEMPLATE
-  << : *BUILD_CUSTOMIZED_TEMPLATE
-
-  always:
-    cleanup_script:
-      - tart delete "$VM_ID" || true
-
-build_and_release_customized_task:
-  only_if: $CIRRUS_CRON != ""
-  depends_on: build-and-release
-
-  matrix: *CUSTOMIZATIONS_TEMPLATE
-  << : *BUILD_CUSTOMIZED_TEMPLATE
-
   release_script:
-    - tart push "$VM_ID" "${CUSTOMIZATION_IMAGE}:latest" "${CUSTOMIZATION_IMAGE}:${CUSTOMIZATION_VERSION}"
+    - [ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }
+    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
 
   always:
     cleanup_script:
