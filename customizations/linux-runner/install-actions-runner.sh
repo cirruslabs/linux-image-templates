@@ -13,6 +13,8 @@ set -euo pipefail
 arch=$(uname -m)
 if [ "$arch" = "x86_64" ]; then
     RUNNER_ARCH="x64"
+elif [ "$arch" = "aarch64" ]; then
+    RUNNER_ARCH="arm64"
 elif [ "$arch" = "arm64" ]; then
     RUNNER_ARCH="arm64"
 else
