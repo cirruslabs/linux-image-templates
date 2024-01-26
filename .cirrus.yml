@@ -68,6 +68,10 @@ task:
     - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_ID"/disk.img
 
   initialize_vm_script:
+    - packer init .
+    - packer build -var vm_name="$VM_ID" .
+
+  customize_vm_script:
     - '[ -z "$CUSTOMIZATION_PATH" ] && { echo "Nothing to customize"; exit 0; }'
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
