@@ -405,8 +405,14 @@
         classic: true
 
     - name: install AWS CLI Session Manager plugin
+      when: ansible_architecture == "aarch64"
       apt:
         deb: "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb"
+
+    - name: install AWS CLI Session Manager plugin
+      when: ansible_architecture == "x86_64"
+      apt:
+        deb: "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
 
     # Not installing the AWS SAM CLI because it has no .deb/Snap package(s)[1]
     #

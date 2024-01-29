@@ -2,7 +2,7 @@ packer {
   required_plugins {
     tart = {
       source  = "github.com/cirruslabs/tart"
-      version = ">= 1.6.1"
+      version = ">= 1.7.0"
     }
   }
 }
@@ -16,6 +16,7 @@ source "tart-cli" "tart" {
   disk_size_gb = 20
   run_extra_args = ["--disk", "cloud-init.iso"]
   headless = false
+  disable_vnc = true
   ssh_username = "admin"
   ssh_password = "admin"
 }

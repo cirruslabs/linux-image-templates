@@ -2,7 +2,7 @@ packer {
   required_plugins {
     tart = {
       source  = "github.com/cirruslabs/tart"
-      version = ">= 1.6.1"
+      version = ">= 1.7.0"
     }
     ansible = {
       source  = "github.com/hashicorp/ansible"
@@ -16,10 +16,10 @@ variable "vm_name" {
 }
 
 source "tart-cli" "tart" {
-  vm_base_name = "ghcr.io/cirruslabs/ubuntu:latest"
   vm_name = "${var.vm_name}"
   disk_size_gb = 20
   headless = false
+  disable_vnc = true
   ssh_username = "admin"
   ssh_password = "admin"
 }
