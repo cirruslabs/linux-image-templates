@@ -37,8 +37,7 @@ task:
         URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner"
-        CUSTOMIZATION_IMAGE: "ghcr.io/cirruslabs/ubuntu-runner-$VM_ARCH"
-        CUSTOMIZATION_VERSION: "22.04"
+        CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH"
 
   persistent_worker:
     labels:
@@ -79,7 +78,8 @@ task:
 
   release_script:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
-    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME":latest ghcr.io/cirruslabs/"$VM_NAME":"$VM_RELEASE"
+    - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
+    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":latest ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
 
   always:
     cleanup_script:
