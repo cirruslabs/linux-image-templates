@@ -39,6 +39,9 @@ build {
       # Add "admin" user to the "docker" group
       "sudo gpasswd -a admin docker",
       "newgrp",
+      # Add "admin" user to the "kvm" group
+      "sudo gpasswd -a admin kvm",
+      "newgrp",
       # Disable unattended upgrades
       "sudo cp /usr/share/unattended-upgrades/20auto-upgrades-disabled /etc/apt/apt.conf.d/",
       # Install QEMU and emulators for non-host architectures, so that we can
