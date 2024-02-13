@@ -580,8 +580,19 @@
         state: directory
       when: ansible_architecture == "x86_64"
 
+    - uri:
+        url: https://dl.google.com/android/repository/repository2-1.xml
+        return_content: yes
+      register: android_repository_xml
+
+    - xml:
+        xmlstring: "{{ android_repository_xml.content }}"
+        xpath: '//remotePackage[@path="cmdline-tools;latest"][channelRef/@ref="channel-0"]/archives/archive[host-os="linux"]/complete/url'
+        content: text
+      register: cmdline_tools_url
+
     - unarchive:
-        src: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        src: "https://dl.google.com/android/repository/{{ cmdline_tools_url.matches[0]['url'] }}"
         remote_src: yes
         dest: /opt/android-sdk/cmdline-tools
       become: no
