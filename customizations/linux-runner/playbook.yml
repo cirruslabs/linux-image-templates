@@ -585,6 +585,9 @@
         return_content: yes
       register: android_repository_xml
 
+    - apt:
+        name: python3-lxml
+
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
         xpath: '//remotePackage[@path="cmdline-tools;latest"][channelRef/@ref="channel-0"]/archives/archive[host-os="linux"]/complete/url'
