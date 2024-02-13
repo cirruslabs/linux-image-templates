@@ -476,7 +476,7 @@
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#java
     - name: install Java
       apt:
-        name: default-jdk
+        name: openjdk-19-jdk-headless
 
     # PHP Tools[1]
     #
@@ -557,8 +557,50 @@
     # Android[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#android
+    - file:
+        path: /opt/android-sdk
+        owner: admin
+        group: admin
+        state: directory
+      when: ansible_architecture == "x86_64"
 
-    # Not installing anything Android-related until someone asks us to.
+    - replace:
+        path: /etc/environment
+        regexp: '^PATH="(.*)"$'
+        replace: 'PATH="\1:{{ item }}"'
+      with_items:
+        - /opt/android-sdk/cmdline-tools/latest/bin
+        - /opt/android-sdk/platform-tools
+        - /opt/android-sdk/emulator
+
+    - file:
+        path: /opt/android-sdk/cmdline-tools
+        owner: admin
+        group: admin
+        state: directory
+      when: ansible_architecture == "x86_64"
+
+    - unarchive:
+        src: https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        remote_src: yes
+        dest: /opt/android-sdk/cmdline-tools
+      become: no
+      when: ansible_architecture == "x86_64"
+
+    - command: mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest
+      become: no
+      when: ansible_architecture == "x86_64"
+
+    - shell: yes | /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+      become: no
+      when: ansible_architecture == "x86_64"
+
+    - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
+      with_items:
+        - "platform-tools"
+        - "emulator"
+      become: no
+      when: ansible_architecture == "x86_64"
 
     # Cached Docker images[1]
     #
