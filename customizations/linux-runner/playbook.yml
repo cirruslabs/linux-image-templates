@@ -569,6 +569,7 @@
           export PATH="$PATH:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/emulator"
           export ANDROID_HOME="/opt/android-sdk"
         dest: /etc/profile.d/cirruslabs.sh
+        mode: a+x
 
     - file:
         path: /opt/android-sdk/cmdline-tools
