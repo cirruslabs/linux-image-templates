@@ -592,6 +592,33 @@
         content: text
       register: cmdline_tools_url
 
+    - xml:
+        xmlstring: "{{ android_repository_xml.content }}"
+        xpath: //remotePackage[@path and starts-with(@path, 'platforms;android-')][channelRef/@ref="channel-0"]
+        register: platforms_android_unsorted
+
+    - name: Get the latest Android platforms
+      set_fact:
+        latest_platforms_android_version: "{{ platforms_android_unsorted.matches | sort(attribute='path', reverse=true) | first }}"
+
+    - xml:
+        xmlstring: "{{ android_repository_xml.content }}"
+        xpath: //remotePackage[@path and starts-with(@path, 'build-tools;')][channelRef/@ref="channel-0"]
+        register: build_tools_unsorted
+
+    - name: Get the latest Android build tools
+      set_fact:
+        latest_build_tools_version: "{{ build_tools_unsorted.matches | sort(attribute='path', reverse=true) | first }}"
+
+    - xml:
+        xmlstring: "{{ android_repository_xml.content }}"
+        xpath: //remotePackage[@path and starts-with(@path, 'ndk;')][channelRef/@ref="channel-0"]
+        register: ndk_unsorted
+
+    - name: Get the latest Android NDK
+      set_fact:
+        latest_ndk_version: "{{ ndk_unsorted.matches | sort(attribute='path', reverse=true) | first }}"
+
     - unarchive:
         src: "https://dl.google.com/android/repository/{{ cmdline_tools_url.matches[0]['url'] }}"
         remote_src: yes
@@ -611,6 +638,9 @@
       with_items:
         - "platform-tools"
         - "emulator"
+        - {{latest_platforms_android_version['path']}}
+        - {{latest_build_tools_version['path']}}
+        - {{latest_ndk_version['path']}}
       become: no
       when: ansible_architecture == "x86_64"
 
