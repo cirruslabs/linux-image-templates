@@ -42,10 +42,7 @@ build {
   }
 
   provisioner "shell" {
-    inline = [
-      # Ensure that ANDROID_HOME environment variable is set
-      "test ! -z \"${ANDROID_HOME}\"",
-    ]
+    script = "test.sh"
   }
 
   provisioner "shell" {
