@@ -1,0 +1,11 @@
+- name: install extra software to enrich the ubuntu-22.04 runner image
+  hosts: default
+  become: true
+
+  tasks:
+    - name: download "android-wait-for-emulator" helper script and make it executable
+      get_url:
+        url: https://raw.githubusercontent.com/travis-ci/travis-cookbooks/master/community-cookbooks/android-sdk/files/default/android-wait-for-emulator
+        checksum: "sha256:83d6ac9e265a813adf0413178a583c529133890fdfe6f01508f5bc22be592ab6"
+        dest: /usr/bin/android-wait-for-emulator
+        mode: a+x

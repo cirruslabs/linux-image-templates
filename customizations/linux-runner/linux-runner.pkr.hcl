@@ -34,6 +34,18 @@ build {
     use_sftp = true
   }
 
+  provisioner "ansible" {
+    playbook_file = "./playbook-extras.yml"
+
+    # scp command is only available after we install the openssh-client
+    use_sftp = true
+  }
+
+  provisioner "shell" {
+    script = "test.sh"
+    execute_command = "chmod +x {{ .Path }}; {{ .Vars }} bash -l {{ .Path }}"
+  }
+
   provisioner "shell" {
     inline = [
       # Add "admin" user to the "docker" group
