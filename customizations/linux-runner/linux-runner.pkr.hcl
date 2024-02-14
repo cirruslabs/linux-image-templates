@@ -43,6 +43,7 @@ build {
 
   provisioner "shell" {
     script = "test.sh"
+    execute_command = "chmod +x {{ .Path }}; {{ .Vars }} bash -l {{ .Path }}"
   }
 
   provisioner "shell" {
