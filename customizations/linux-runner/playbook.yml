@@ -600,7 +600,7 @@
 
     - name: Get the latest Android platforms version
       set_fact:
-        latest_platforms_android_version: "{{ platforms_android_unsorted.matches | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | community.general.version_sort | last }}"
+        latest_platforms_android_version: "{{ platforms_android_packages.matches | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | community.general.version_sort | last }}"
 
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
