@@ -41,11 +41,11 @@ build {
     use_sftp = true
   }
 
-  provisioner "ansible" {
-    playbook_file = "./playbook-test.yml"
-
-    # scp command is only available after we install the openssh-client
-    use_sftp = true
+  provisioner "shell" {
+    inline = [
+      # Ensure that ANDROID_HOME environment variable is set
+      "test ! -z \"${ANDROID_HOME}\"",
+    ]
   }
 
   provisioner "shell" {

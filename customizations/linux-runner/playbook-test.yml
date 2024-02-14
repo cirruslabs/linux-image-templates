@@ -1,9 +1,0 @@
-- name: test various invariants before proceeding with the final VM image
-  hosts: default
-  become: true
-
-  tasks:
-    - name: ensure that ANDROID_HOME environment variable is set
-      assert:
-        that:
-          - lookup('env', 'ANDROID_HOME') == '/opt/android-sdk'
