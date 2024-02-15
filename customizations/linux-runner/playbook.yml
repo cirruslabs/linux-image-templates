@@ -647,8 +647,8 @@
       with_items:
         - "platform-tools"
         - "emulator"
-        - "{{ latest_platforms_android_version }}"
-        - "{{ latest_build_tools_version }}"
+        - "platforms;android-{{ latest_platforms_android_version }}"
+        - "build-tools;{{ latest_build_tools_version }}"
       become: no
       when: ansible_architecture == "x86_64"
 
