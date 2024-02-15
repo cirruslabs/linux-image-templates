@@ -595,7 +595,7 @@
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
         xpath: //remotePackage[@path and starts-with(@path, 'platforms;android-') and channelRef[@ref='channel-0']]
-        content: text
+        content: attribute
       register: platforms_android_packages
 
     - name: Get the latest Android platforms version
@@ -605,7 +605,7 @@
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
         xpath: //remotePackage[@path and starts-with(@path, 'build-tools;') and channelRef[@ref='channel-0']]
-        content: text
+        content: attribute
       register: build_tools_packages
 
     - name: Get the latest Android build tools version
