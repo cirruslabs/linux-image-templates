@@ -598,6 +598,10 @@
         content: attribute
       register: platforms_android_packages
 
+    - name: Print platforms_android_packages (for debugging)
+      debug:
+        var: platforms_android_packages
+
     - name: Get the latest Android platforms version
       set_fact:
         latest_platforms_android_version: "{{ platforms_android_packages.matches | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | community.general.version_sort | last }}"
@@ -607,6 +611,10 @@
         xpath: //remotePackage[@path and starts-with(@path, 'build-tools;') and channelRef[@ref='channel-0']]
         content: attribute
       register: build_tools_packages
+
+    - name: Print build_tools_packages (for debugging)
+      debug:
+        var: build_tools_packages
 
     - name: Get the latest Android build tools version
       set_fact:
