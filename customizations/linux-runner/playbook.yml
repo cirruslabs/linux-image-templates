@@ -604,7 +604,11 @@
 
     - name: Get the latest Android platforms version
       set_fact:
-        latest_platforms_android_version: "{{ platforms_android_packages.matches | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | community.general.version_sort | last }}"
+        latest_platforms_android_version: "{{ platforms_android_packages.matches | map(attribute='remotePackage') | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | select('regex', '^\\d+(\\.\\d+)*$') | community.general.version_sort | last }}"
+
+    - name: Print latest_platforms_android_version (for debugging)
+      debug:
+        var: latest_platforms_android_version
 
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
@@ -618,7 +622,11 @@
 
     - name: Get the latest Android build tools version
       set_fact:
-        latest_build_tools_version: "{{ build_tools_packages.matches | map(attribute='path') | map('regex_replace', '^build-tools;(.+)$', '\\1') | community.general.version_sort | last }}"
+        latest_build_tools_version: "{{ build_tools_packages.matches | map(attribute='remotePackage') | map(attribute='path') | map('regex_replace', '^build-tools;(.+)$', '\\1') | select('regex', '^\\d+(\\.\\d+)*$') | community.general.version_sort | last }}"
+
+    - name: Print latest_build_tools_version (for debugging)
+      debug:
+        var: latest_build_tools_version
 
     - unarchive:
         src: "https://dl.google.com/android/repository/{{ cmdline_tools_url.matches[0]['url'] }}"
