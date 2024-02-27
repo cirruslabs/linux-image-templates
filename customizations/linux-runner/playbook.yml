@@ -537,7 +537,33 @@
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#browsers-and-drivers
 
-    # Not installing anything Browser and Driver-related.
+    - name: fetch the latest Chrome and ChromeDriver download URLs
+      uri:
+        url: https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json
+        return_content: yes
+      register: chromelabs_json
+      when: ansible_architecture == "x86_64"
+
+    - name: install Chrome
+      unarchive:
+        src: "{{ chromelabs_json.json | community.general.json_query('channels.Stable.downloads.chrome[?platform==`linux64`].url | [0]') }}"
+        remote_src: yes
+        dest: /opt
+      when: ansible_architecture == "x86_64"
+
+    - name: install ChromeDriver
+      unarchive:
+        src: "{{ chromelabs_json.json | community.general.json_query('channels.Stable.downloads.chromedriver[?platform==`linux64`].url | [0]') }}"
+        remote_src: yes
+        dest: /opt
+      when: ansible_architecture == "x86_64"
+
+    - copy:
+        content: |
+          export PATH="$PATH:/opt/chrome-linux64:/opt/chromedriver-linux64"
+        dest: /etc/profile.d/cirruslabs-chrome.sh
+        mode: a+x
+      when: ansible_architecture == "x86_64"
 
     # .NET Tools[1]
     #
@@ -590,7 +616,7 @@
           export PATH="$PATH:/opt/android-sdk/cmdline-tools/latest/bin:/opt/android-sdk/platform-tools:/opt/android-sdk/emulator"
           export ANDROID_HOME="/opt/android-sdk"
           export ANDROID_SDK_ROOT="$ANDROID_HOME"
-        dest: /etc/profile.d/cirruslabs.sh
+        dest: /etc/profile.d/cirruslabs-android.sh
         mode: a+x
 
     - file:
