@@ -76,6 +76,8 @@ task:
     - packer init .
     - packer build -var vm_name="$VM_ID" .
 
+  info_script: tart get "$VM_ID"
+
   release_script:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
     - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
