@@ -287,9 +287,30 @@
       apt:
         name: jq
 
-    # Not installing kind because it has no .deb/Snap package(s)[1]
-    #
-    # [1]: https://kind.sigs.k8s.io/docs/user/quick-start/#installing-with-a-package-manager
+    - name: install kind
+      get_url:
+        url: https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-linux-arm64
+        dest: /usr/local/bin/kind
+        mode: a+x
+      when: ansible_architecture == "aarch64"
+
+    - name: install kind
+      get_url:
+        url: https://github.com/kubernetes-sigs/kind/releases/latest/download/kind-linux-amd64
+        dest: /usr/local/bin/kind
+        mode: a+x
+      when: ansible_architecture == "x86_64"
+
+    - name: pre-create a kind cluster to fetch the latest node image
+      command: kind create cluster --kubeconfig /tmp/kubeconfig
+
+    - name: shut down the kind cluster
+      command: kind delete cluster --kubeconfig /tmp/kubeconfig
+
+    - name: remove /tmp/kubeconfig
+      file:
+        path: /tmp/kubeconfig
+        state: absent
 
     - name: install kubectl
       snap:
