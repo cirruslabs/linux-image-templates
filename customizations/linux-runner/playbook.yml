@@ -301,17 +301,6 @@
         mode: a+x
       when: ansible_architecture == "x86_64"
 
-    - name: pre-create a kind cluster to fetch the latest node image
-      command: kind create cluster --kubeconfig /tmp/kubeconfig
-
-    - name: shut down the kind cluster
-      command: kind delete cluster --kubeconfig /tmp/kubeconfig
-
-    - name: remove /tmp/kubeconfig
-      file:
-        path: /tmp/kubeconfig
-        state: absent
-
     - name: install kubectl
       snap:
         name: kubectl
