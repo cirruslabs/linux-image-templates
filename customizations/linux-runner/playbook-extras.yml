@@ -9,3 +9,37 @@
         checksum: "sha256:83d6ac9e265a813adf0413178a583c529133890fdfe6f01508f5bc22be592ab6"
         dest: /usr/bin/android-wait-for-emulator
         mode: a+x
+
+- name: apply boot time optimizations
+  hosts: default
+  become: true
+
+  tasks:
+    # https://forum.snapcraft.io/t/extented-boot-time-due-to-snap/26900/10
+    - name: disable snapd service to improve the boot time
+      systemd_service:
+        name: snapd
+        enabled: false
+
+    # https://forum.snapcraft.io/t/extented-boot-time-due-to-snap/26900/10
+    - name: disable snapd.seeded service to improve the boot time
+      systemd_service:
+        name: snapd.seeded
+        enabled: false
+
+    # "LXD is installed by default on all supported Ubuntu releases"[1],
+    # but GitHub Actions image for Ubuntu 22.04 doesn't mention it[2],
+    # so it's probably safe to remove
+    #
+    # [1]: https://ubuntu.com/ceph/docs/lxd
+    # [2]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md
+    - name: remove LXD to improve the boot time
+      snap:
+        name: lxd
+        state: absent
+
+    # https://wiki.ubuntu.com/Apport
+    - name: disable Apport service by default to improve the boot time
+      systemd_service:
+        name: apport
+        enabled: false
