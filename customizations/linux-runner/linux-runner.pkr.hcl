@@ -28,7 +28,7 @@ build {
   sources = ["source.tart-cli.tart"]
 
   provisioner "ansible" {
-    playbook_file = "./playbook.yml"
+    playbook_file = "./playbook-runner.yml"
 
     # scp command is only available after we install the openssh-client
     use_sftp = true

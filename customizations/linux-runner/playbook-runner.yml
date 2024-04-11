@@ -15,6 +15,7 @@
     - name: install Bash
       apt:
         name: bash
+        install_recommends: false
 
     - name: install clang, clang-format and clang-tidy
       apt:
@@ -22,16 +23,19 @@
           - clang
           - clang-format
           - clang-tidy
+        install_recommends: false
 
     - name: install Dash
       apt:
         name: dash
+        install_recommends: false
 
     - name: install GNU C++ and Fortran
       apt:
         name:
           - g++
           - gfortran
+        install_recommends: false
 
     - name: install Julia
       snap:
@@ -47,10 +51,12 @@
         name:
           - apt-transport-https
           - ca-certificates
+        install_recommends: false
 
     - name: install GnuPG (required by the apt_key module)
       apt:
         name: gpg
+        install_recommends: false
 
     - name: add Mono key
       apt_key:
@@ -68,6 +74,7 @@
         name:
           - mono-devel
           - msbuild
+        install_recommends: false
 
     - name: add Nodesource key
       apt_key:
@@ -83,10 +90,12 @@
     - name: install Node.js
       apt:
         name: nodejs
+        install_recommends: false
 
     - name: install Perl
       apt:
         name: perl
+        install_recommends: false
 
     - name: install Python
       apt:
@@ -94,12 +103,14 @@
           - python3
           - python3-dev
           - python3-venv
+        install_recommends: false
 
     - name: install Ruby
       apt:
         name:
           - ruby
           - ruby-dev
+        install_recommends: false
 
     # Skip installing Swift because no Debian/Snap package is available[1]
     #
@@ -116,6 +127,7 @@
     - name: install build tools required for CPAN
       apt:
         name: build-essential
+        install_recommends: false
 
     - name: add Balto key for Helm
       apt_key:
@@ -131,6 +143,7 @@
     - name: install Helm
       apt:
         name: helm
+        install_recommends: false
 
     # Skip installing Homebrew as it's not supported on arm64 Linux yet[1]
     #
@@ -145,10 +158,12 @@
     - name: install NuGet
       apt:
         name: nuget
+        install_recommends: false
 
     - name: install Pip
       apt:
         name: python3-pip
+        install_recommends: false
 
     - name: install Pipx
       pip:
@@ -157,6 +172,7 @@
     - name: install RubyGems
       apt:
         name: ruby-rubygems
+        install_recommends: false
 
     # Skip installing Vcpkg because it has no .deb/Snap package(s)[1]
     #
@@ -180,6 +196,7 @@
     - name: install Maven
       apt:
         name: maven
+        install_recommends: false
 
     # Tools[1]
     #
@@ -214,10 +231,12 @@
     - name: install Buildah
       apt:
         name: buildah
+        install_recommends: false
 
     - name: install CMake
       apt:
         name: cmake
+        install_recommends: false
 
     # Skip installing CodeQL Action Bundle because it has no .deb/Snap package(s)[1]
     #
@@ -227,10 +246,6 @@
       apt:
         name: amazon-ecr-credential-helper
         install_recommends: false
-
-    - name: install build tools required for CPAN
-      apt:
-        name: build-essential
 
     - name: add Docker key
       apt_key:
@@ -246,20 +261,24 @@
     - name: install Docker Compose plugin
       apt:
         name: docker-compose-plugin
+        install_recommends: false
 
     - name: install Docker Buildx plugin
       apt:
         name: docker-buildx-plugin
+        install_recommends: false
 
     - name: install Docker Client
       apt:
         name: docker-ce-cli
+        install_recommends: false
 
     - name: install Docker Server
       apt:
         name:
           - docker-ce
           - containerd.io
+        install_recommends: false
 
     # Skip installing Fastlane
     #
@@ -272,10 +291,12 @@
           - git
           - git-lfs
           - git-ftp
+        install_recommends: false
 
     - name: install haveged
       apt:
         name: haveged
+        install_recommends: false
 
     # Not installing Heroku because it has no .deb packages[1] and the Snap package
     # was last updated almost 2 years ago (in 2022)[2]
@@ -286,6 +307,7 @@
     - name: install jq
       apt:
         name: jq
+        install_recommends: false
 
     - name: install kind
       get_url:
@@ -317,10 +339,12 @@
     - name: install MediaInfo
       apt:
         name: mediainfo
+        install_recommends: false
 
     - name: install Mercurial
       apt:
         name: mercurial
+        install_recommends: false
 
     # Not installing minikube because it has no .deb/Snap package(s)[1]
     #
@@ -343,6 +367,7 @@
     - name: install OpenSSL
       apt:
         name: openssl
+        install_recommends: false
 
     - name: add HashiCorp key
       apt_key:
@@ -358,6 +383,7 @@
     - name: install Packer
       apt:
         name: packer
+        install_recommends: false
 
     # Not installing Parcel because it can be easily installed via npm[1]
     #
@@ -366,6 +392,19 @@
     - name: install Podman
       apt:
         name: podman
+        install_recommends: false
+
+    # https://docs.podman.io/en/stable/markdown/podman-auto-update.1.html
+    - name: disable Podman's auto-update service to improve the boot time
+      systemd_service:
+        name: podman-auto-update
+        enabled: false
+
+    # https://docs.podman.io/en/stable/markdown/podman-restart.1.html
+    - name: disable Podman's restart service to improve the boot time
+      systemd_service:
+        name: podman-restart
+        enabled: false
 
     # Not installing Pulumi because it has no .deb/Snap package(s)[1]
     #
@@ -379,18 +418,22 @@
     - name: install skopeo
       apt:
         name: skopeo
+        install_recommends: false
 
     - name: install Sphinx Open Source Search Server
       apt:
         name: sphinxsearch
+        install_recommends: false
 
     - name: install Subversion
       apt:
         name: subversion
+        install_recommends: false
 
     - name: install Terraform
       apt:
         name: terraform
+        install_recommends: false
 
     # Not installing yamllint[1] because it doesn't seem to be very popular
     # and can be easily installed via pip.
@@ -404,6 +447,7 @@
     - name: install zstd
       apt:
         name: zstd
+        install_recommends: false
 
     # Not installing Alibaba Cloud CLI because it has no .deb/Snap package(s)[1]
     #
@@ -418,11 +462,13 @@
       when: ansible_architecture == "aarch64"
       apt:
         deb: "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb"
+        install_recommends: false
 
     - name: install AWS CLI Session Manager plugin
       when: ansible_architecture == "x86_64"
       apt:
         deb: "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb"
+        install_recommends: false
 
     # Not installing the AWS SAM CLI because it has no .deb/Snap package(s)[1]
     #
@@ -442,6 +488,7 @@
     - name: install Azure CLI
       apt:
         name: azure-cli
+        install_recommends: false
 
     # Not installing Azure DevOps CLI because it seems that
     # it can be easily enabled through the Azure CLI itself
@@ -460,6 +507,7 @@
     - name: install GitHub CLI
       apt:
         name: gh
+        install_recommends: false
 
     - name: install Google Cloud CLI
       snap:
@@ -487,6 +535,7 @@
     - name: install Java
       apt:
         name: openjdk-19-jdk-headless
+        install_recommends: false
 
     # PHP Tools[1]
     #
@@ -494,6 +543,13 @@
     - name: install PHP
       apt:
         name: php
+        install_recommends: false
+
+    # https://www.wikieduonline.com/wiki/Phpsessionclean.service_(systemd_service)
+    - name: disable PHP's session clean service by default to improve the boot time
+      systemd_service:
+        name: phpsessionclean
+        enabled: false
 
     # Not installing Composer because it has no .deb/Snap package(s)[1]
     #
@@ -569,6 +625,7 @@
         name:
           - sqlite3
           - libsqlite3-dev
+        install_recommends: false
 
     # Not installing PostgreSQL, MySQL and MS SQL because no one had asked us to.
 
@@ -622,6 +679,7 @@
 
     - apt:
         name: python3-lxml
+        install_recommends: false
 
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
@@ -780,3 +838,4 @@
           - xz-utils
           - zip
           - zsync
+        install_recommends: false
