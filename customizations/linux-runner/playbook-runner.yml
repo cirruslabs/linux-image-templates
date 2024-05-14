@@ -8,6 +8,13 @@
         update_cache: true
         cache_valid_time: 3600
 
+    - name: create RUNNER_TOOL_CACHE directory
+      file:
+        path: /opt/hostedtoolcache
+        owner: admin
+        group: admin
+        state: directory
+
     # Language and Runtime[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#language-and-runtime
