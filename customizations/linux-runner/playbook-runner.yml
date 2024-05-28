@@ -15,6 +15,13 @@
         group: admin
         state: directory
 
+    - name: create .NET directory
+      file:
+        path: /usr/share/dotnet
+        owner: admin
+        group: admin
+        state: directory
+
     # Language and Runtime[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#language-and-runtime
