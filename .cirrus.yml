@@ -32,9 +32,9 @@ task:
     - name: Fedora
       env:
         VM_NAME: "fedora"
-        VM_RELEASE: "38"
+        VM_RELEASE: "39"
         VM_ARCH: "arm64"
-        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
+        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/aarch64/images/Fedora-Cloud-Base-39-1.5.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
     - name: Linux Runner ($VM_ARCH)
