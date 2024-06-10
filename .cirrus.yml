@@ -6,12 +6,20 @@ env:
 
 task:
   matrix:
-    - name: Ubuntu
+    - name: Ubuntu 22.04
       env:
         VM_NAME: "ubuntu"
         VM_RELEASE: "22.04"
         VM_ARCH: "arm64"
         URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+        LATEST: latest
+    - name: Ubuntu 24.04
+      env:
+        VM_NAME: "ubuntu"
+        VM_RELEASE: "24.04"
+        VM_ARCH: "arm64"
+        URL: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
     - name: Debian
       env:
@@ -20,6 +28,7 @@ task:
         VM_ARCH: "arm64"
         URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+        LATEST: latest
     - name: Fedora
       env:
         VM_NAME: "fedora"
@@ -27,6 +36,7 @@ task:
         VM_ARCH: "arm64"
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+        LATEST: latest
     - name: Linux Runner ($VM_ARCH)
       env:
         VM_NAME: "ubuntu"
@@ -38,6 +48,7 @@ task:
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner"
         CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH"
+        LATEST: latest
 
   persistent_worker:
     labels:
@@ -78,8 +89,15 @@ task:
 
   info_script: tart get "$VM_ID"
 
-  release_script:
+  release_without_latest_script:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
+    - '[ ! -z "$LATEST" ] && { echo "Skipping script that releases without latest tag"; exit 0; }'
+    - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
+    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
+
+  release_with_latest_script:
+    - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
+    - '[ -z "$LATEST" ] && { echo "Skipping script that releases with latest tag"; exit 0; }'
     - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
     - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":latest ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
 
