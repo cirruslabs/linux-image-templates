@@ -62,7 +62,7 @@ task:
     RAW_IMAGE: image.raw
 
   install_dependencies_script:
-    - brew install wget qemu cdrtools hashicorp/tap/packer ansible
+    - brew install wget qemu cdrtools ansible
 
   download_cloud_image_disk_script:
     - wget -O "$QCOW2_IMAGE" "$URL" || true
