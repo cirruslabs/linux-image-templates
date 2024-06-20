@@ -5,7 +5,27 @@ env:
   TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
 
 task:
+  name: "Install dependencies ($VM_ARCH)"
+
+  persistent_worker:
+    labels:
+      arch: $VM_ARCH
+    resources:
+      tart-vms: 2
+
+  matrix:
+    - env:
+        VM_ARCH: arm64
+    - env:
+        VM_ARCH: amd64
+
+  install_dependencies_script:
+    - brew install wget qemu cdrtools ansible
+
+task:
   timeout_in: 2h
+  depends_on:
+    - "Install dependencies ($VM_ARCH)"
 
   matrix:
     - name: Ubuntu 22.04
@@ -60,9 +80,6 @@ task:
   env:
     QCOW2_IMAGE: image.qcow2
     RAW_IMAGE: image.raw
-
-  install_dependencies_script:
-    - brew install wget qemu cdrtools ansible
 
   download_cloud_image_disk_script:
     - wget -O "$QCOW2_IMAGE" "$URL" || true
