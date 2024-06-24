@@ -9,6 +9,7 @@ task:
 
   persistent_worker:
     labels:
+      name: dev-mini
       arch: $VM_ARCH
     resources:
       tart-vms: 2
@@ -74,6 +75,7 @@ task:
 
   persistent_worker:
     labels:
+      name: dev-mini
       arch: $VM_ARCH
     resources:
       tart-vms: 1
