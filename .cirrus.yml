@@ -3,22 +3,25 @@ env:
   VM_ID: "task-${CIRRUS_TASK_ID}"
   TART_REGISTRY_USERNAME: fkorotkov # GitHub supports only PATs
   TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
+  WORKER_NAME_ARM64: dev-mini
+  WORKER_NAME_AMD64: Mac-Mini-Intel
 
 task:
   name: "Install dependencies ($VM_ARCH)"
 
   persistent_worker:
-    labels:
-      name: dev-mini
-      arch: $VM_ARCH
     resources:
       tart-vms: 2
 
   matrix:
-    - env:
-        VM_ARCH: arm64
-    - env:
-        VM_ARCH: amd64
+    - persistent_worker:
+        labels:
+          name: $WORKER_NAME_ARM64
+          arch: arm64
+    - persistent_worker:
+        labels:
+          name: $WORKER_NAME_AMD64
+          arch: amd64
 
   install_dependencies_script:
     - brew install wget qemu cdrtools ansible
@@ -33,6 +36,7 @@ task:
       env:
         VM_NAME: "ubuntu"
         VM_RELEASE: "22.04"
+        WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
@@ -41,6 +45,7 @@ task:
       env:
         VM_NAME: "ubuntu"
         VM_RELEASE: "24.04"
+        WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         URL: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
@@ -48,6 +53,7 @@ task:
       env:
         VM_NAME: "debian"
         VM_RELEASE: "bookworm"
+        WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
@@ -56,6 +62,7 @@ task:
       env:
         VM_NAME: "fedora"
         VM_RELEASE: "39"
+        WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/aarch64/images/Fedora-Cloud-Base-39-1.5.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
@@ -66,7 +73,9 @@ task:
         VM_RELEASE: "22.04"
         matrix:
           - VM_ARCH: "arm64"
+            WORKER_NAME: $WORKER_NAME_ARM64
           - VM_ARCH: "amd64"
+            WORKER_NAME: $WORKER_NAME_AMD64
         URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner"
@@ -75,7 +84,7 @@ task:
 
   persistent_worker:
     labels:
-      name: dev-mini
+      name: $WORKER_NAME
       arch: $VM_ARCH
     resources:
       tart-vms: 1
