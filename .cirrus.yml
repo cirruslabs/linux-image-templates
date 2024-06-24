@@ -7,21 +7,22 @@ env:
   WORKER_NAME_AMD64: Mac-Mini-Intel
 
 task:
-  name: "Install dependencies ($VM_ARCH)"
+  name: "Install dependencies ($WORKER_NAME)"
 
   persistent_worker:
+    labels:
+      name: $WORKER_NAME
+      arch: $WORKER_ARCH
     resources:
       tart-vms: 2
 
   matrix:
-    - persistent_worker:
-        labels:
-          name: $WORKER_NAME_ARM64
-          arch: arm64
-    - persistent_worker:
-        labels:
-          name: $WORKER_NAME_AMD64
-          arch: amd64
+    - env:
+        WORKER_NAME: $WORKER_NAME_ARM64
+        WORKER_ARCH: arm64
+    - env:
+        WORKER_NAME: $WORKER_NAME_AMD64
+        WORKER_ARCH: amd64
 
   install_dependencies_script:
     - brew install wget qemu cdrtools ansible
@@ -29,7 +30,7 @@ task:
 task:
   timeout_in: 2h
   depends_on:
-    - "Install dependencies ($VM_ARCH)"
+    - "Install dependencies ($WORKER_NAME)"
 
   matrix:
     - name: Ubuntu 22.04
