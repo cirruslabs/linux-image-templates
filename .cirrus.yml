@@ -27,6 +27,13 @@ task:
         VM_ARCH: "arm64"
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/aarch64/images/Fedora-Cloud-Base-38-1.6.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+    - name: NixOS
+      env:
+        VM_NAME: "nixos"
+        VM_RELEASE: "24.05"
+        VM_ARCH: "arm64"
+        URL: https://channels.nixos.org/nixos-24.05/latest-nixos-gnome-aarch64-linux.iso
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
     - name: Linux Runner ($VM_ARCH)
       env:
         VM_NAME: "ubuntu"
