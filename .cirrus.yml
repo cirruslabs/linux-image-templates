@@ -82,6 +82,20 @@ task:
         CUSTOMIZATION_PATH: "customizations/linux-runner"
         CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH"
         LATEST: latest
+    - name: Linux Runner w/ GPU ($VM_ARCH)
+      depends_on:
+        - "Linux Runner ($VM_ARCH)"
+      env:
+        VM_NAME: "ubuntu"
+        VM_RELEASE: "22.04"
+        matrix:
+          - VM_ARCH: "amd64"
+            WORKER_NAME: $WORKER_NAME_AMD64
+        URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+        CUSTOMIZATION_PATH: "customizations/linux-runner-gpu"
+        CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH-gpu"
+        LATEST: latest
 
   persistent_worker:
     labels:
@@ -124,13 +138,13 @@ task:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
     - '[ ! -z "$LATEST" ] && { echo "Skipping script that releases without latest tag"; exit 0; }'
     - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
-    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
+    - tart push --populate-cache "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
 
   release_with_latest_script:
     - '[ -z "$CIRRUS_CRON" ] && { echo "Only release via cron"; exit 0; }'
     - '[ -z "$LATEST" ] && { echo "Skipping script that releases with latest tag"; exit 0; }'
     - export VM_NAME_TO_PUSH="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
-    - tart push "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":latest ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
+    - tart push --populate-cache "$VM_ID" ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":latest ghcr.io/cirruslabs/"$VM_NAME_TO_PUSH":"$VM_RELEASE"
 
   always:
     cleanup_script:
