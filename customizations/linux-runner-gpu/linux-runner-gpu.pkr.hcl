@@ -31,10 +31,10 @@ build {
   provisioner "shell" {
     inline = [
       # Install NVIDIA GPU driver
-      "apt-get update",
-      "apt-get install -y linux-headers-$(uname -r)",
-      "apt-get install -y nvidia-dkms-550",
-      "apt-get install -y nvidia-driver-550-server",
+      "sudo apt-get update",
+      "sudo apt-get install -y linux-headers-$(uname -r)",
+      "sudo apt-get install -y nvidia-dkms-550",
+      "sudo apt-get install -y nvidia-driver-550-server",
     ]
   }
 }
