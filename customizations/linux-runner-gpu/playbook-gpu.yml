@@ -1,0 +1,36 @@
+- name: install Linux kernel headers (needed for nvidia-dkms-*)
+  apt:
+    name: linux-headers-generic
+    update_cache: true
+    cache_valid_time: 3600
+  become: yes
+
+- name: install NVIDIA GPU driver
+  apt:
+    name:
+      - nvidia-dkms-550-server
+      - nvidia-driver-550-server
+  become: yes
+
+- name: install GnuPG (required by the apt_key module)
+  apt:
+    name: gpg
+  become: yes
+
+- name: add CUDA key
+  apt_key:
+    id: ""
+    url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-archive-keyring.gpg"
+    keyring: /etc/apt/trusted.gpg.d/cuda.gpg
+  become: yes
+
+- name: add CUDA repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/cuda.gpg] https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/ /"
+    filename: cuda
+  become: yes
+
+- name: install CUDA
+  apt:
+    name: cuda-toolkit
+  become: yes
