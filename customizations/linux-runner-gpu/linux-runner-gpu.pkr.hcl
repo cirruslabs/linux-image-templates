@@ -18,7 +18,7 @@ variable "vm_name" {
 source "tart-cli" "tart" {
   vm_base_name = "ghcr.io/cirruslabs/ubuntu-runner-amd64:latest"
   vm_name = "${var.vm_name}"
-  disk_size_gb = 20
+  disk_size_gb = 25
   headless = false
   disable_vnc = true
   ssh_username = "admin"
@@ -28,13 +28,10 @@ source "tart-cli" "tart" {
 build {
   sources = ["source.tart-cli.tart"]
 
-  provisioner "shell" {
-    inline = [
-      # Install NVIDIA GPU driver
-      "sudo apt-get update",
-      "sudo apt-get install -y linux-headers-$(uname -r)",
-      "sudo apt-get install -y nvidia-dkms-550",
-      "sudo apt-get install -y nvidia-driver-550-server",
-    ]
+  provisioner "ansible" {
+    playbook_file = "./playbook-gpu.yml"
+
+    # scp command is only available after we install the openssh-client
+    use_sftp = true
   }
 }
