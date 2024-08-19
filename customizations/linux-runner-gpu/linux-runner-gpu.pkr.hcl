@@ -18,7 +18,7 @@ variable "vm_name" {
 source "tart-cli" "tart" {
   vm_base_name = "ghcr.io/cirruslabs/ubuntu-runner-amd64:latest"
   vm_name = "${var.vm_name}"
-  disk_size_gb = 20
+  disk_size_gb = 25
   headless = false
   disable_vnc = true
   ssh_username = "admin"
