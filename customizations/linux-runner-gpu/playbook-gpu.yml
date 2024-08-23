@@ -35,6 +35,11 @@
         url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin"
         dest: /etc/apt/preferences.d/cuda.pref
 
-    - name: install CUDA
+    - name: install CUDA and container toolkits
       apt:
-        name: cuda-toolkit
+        name:
+          - cuda-toolkit
+          - nvidia-container-toolkit
+
+    - name: configure Docker to use the CUDA container toolkit
+      command: sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
