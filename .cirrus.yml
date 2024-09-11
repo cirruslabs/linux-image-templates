@@ -4,7 +4,7 @@ env:
   TART_REGISTRY_USERNAME: fkorotkov # GitHub supports only PATs
   TART_REGISTRY_PASSWORD: ENCRYPTED[!82ed873afdf627284305afef4958c85a8f73127b09978a9786ac521559630ea6c9a5ab6e7f8315abf9ead09b6eff6eae!]
   WORKER_NAME_ARM64: dev-mini
-  WORKER_NAME_AMD64: Mac-Mini-Intel
+  WORKER_NAME_AMD64: dev-mini-amd64
 
 task:
   name: "Install dependencies ($WORKER_NAME)"
