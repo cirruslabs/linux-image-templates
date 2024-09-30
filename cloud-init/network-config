@@ -7,3 +7,9 @@ network:
       match:
         name: en*
       dhcp4: true
+
+      # Work around macOS DHCP server treating "hw_address" and "identifier" fields
+      # in /var/db/dhcpd_leases the same way and putting client identifier (which is
+      # a DUID/IAID) into the "hw_address" field, making it impossible to locate the
+      # corresponding entry given a MAC-address in "tart ip".
+      dhcp-identifier: mac
