@@ -1,4 +1,4 @@
-load("cirrus", "env", "http", "fs")
+load("cirrus", "env", "http")
 
 
 def on_build_failed(ctx):
