@@ -68,7 +68,7 @@ task:
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/aarch64/images/Fedora-Cloud-Base-39-1.5.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
-    - name: Rocky_Linux
+    - name: Rocky Linux 9
       env:
         VM_NAME: "rocky"
         VM_RELEASE: "9"
