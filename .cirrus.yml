@@ -77,14 +77,6 @@ task:
         URL:  https://dl.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base.latest.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
-    - name: Rocky Linux 8
-      env:
-        VM_NAME: "rocky"
-        VM_RELEASE: "8"
-        WORKER_NAME: $WORKER_NAME_ARM64
-        VM_ARCH: "arm64"
-        URL:  https://dl.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-GenericCloud-Base.latest.aarch64.qcow2
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
     - name: Linux Runner ($VM_ARCH)
       env:
         VM_NAME: "ubuntu"
