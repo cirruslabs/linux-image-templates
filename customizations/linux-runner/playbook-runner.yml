@@ -159,9 +159,24 @@
         name: helm
         install_recommends: false
 
-    # Skip installing Homebrew as it's not supported on arm64 Linux yet[1]
+    # Only install Homebrew on amd64 as it's not supported on arm64 Linux yet[1]
     #
     # [1]: https://docs.brew.sh/Homebrew-on-Linux#arm-unsupported
+    - name: download Homebrew installation script
+      uri:
+        url: https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
+        return_content: true
+      register: homebrew_installation_script
+      when: ansible_architecture == "x86_64"
+
+    - name: run Homebrew installation script
+      shell:
+        cmd: bash -s
+        stdin: "{{ homebrew_installation_script.content }}"
+      environment:
+        NONINTERACTIVE: 1
+      become: false
+      when: ansible_architecture == "x86_64"
 
     # Skip installing Miniconda as it has no .deb/Snap package(s)[1]
     #
