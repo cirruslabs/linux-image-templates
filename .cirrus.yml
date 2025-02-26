@@ -90,7 +90,7 @@ task:
         CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH"
     - name: Linux Runner w/ GPU ($VM_RELEASE $VM_ARCH)
       depends_on:
-        - "Linux Runner ($VM_ARCH)"
+        - "Linux Runner ($VM_RELEASE $VM_ARCH)"
       env:
         VM_NAME: "ubuntu"
         matrix:
