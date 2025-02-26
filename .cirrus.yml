@@ -42,7 +42,6 @@ task:
             LATEST: latest
           - VM_RELEASE: "22.04"
             URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
-        VM_RELEASE: "22.04"
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
