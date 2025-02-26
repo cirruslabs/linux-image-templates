@@ -257,7 +257,8 @@
         global: true
 
     - name: install Bazel
-      command: bazel
+      when: ansible_architecture == "x86_64" # crushes on Ubuntu 24.04 on aarch64
+      command: bazel version
 
     # Skip installing Bicep (language for deploying Azure resources)
     # because it has no .deb/Snap package(s) and can be easily
@@ -569,9 +570,15 @@
     # Java[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#java
-    - name: install Java
+    - name: install Java 19
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
       apt:
         name: openjdk-19-jdk-headless
+        install_recommends: false
+    - name: install Java 21
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      apt:
+        name: openjdk-21-jdk-headless
         install_recommends: false
 
     # PHP Tools[1]
@@ -792,8 +799,10 @@
 
     # Installed apt packages[1]
     #
-    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-images
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
     - apt:
+        when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+        install_recommends: false
         name:
           - acl
           - aria2
@@ -875,4 +884,80 @@
           - xz-utils
           - zip
           - zsync
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
+    - apt:
+        when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
         install_recommends: false
+        name:
+          - acl
+          - aria2
+          - autoconf
+          - automake
+          - binutils
+          - bison
+          - brotli
+          - bzip2
+          - coreutils
+          - curl
+          - dbus
+          - dnsutils
+          - dpkg
+          - dpkg-dev
+          - fakeroot
+          - file
+          - findutils
+          - flex
+          - fonts-noto-color-emoji
+          - ftp
+          - g++
+          - gcc
+          - gnupg2
+          - haveged
+          - iproute2
+          - iputils-ping
+          - jq
+          - libsqlite3-dev
+          - libssl-dev
+          - libtool
+          - libyaml-dev
+          - locales
+          - lz4
+          - m4
+          - make
+          - mediainfo
+          - mercurial
+          - net-tools
+          - netcat
+          - openssh-client
+          - p7zip-full
+          - p7zip-rar
+          - parallel
+          - patchelf
+          - pigz
+          - pkg-config
+          - pollinate
+          - python-is-python3
+          - rpm
+          - rsync
+          - shellcheck
+          - sphinxsearch
+          - sqlite3
+          - ssh
+          - sshpass
+          - sudo
+          - swig
+          - systemd-coredump
+          - tar
+          - telnet
+          - texinfo
+          - time
+          - tk
+          - tree
+          - tzdata
+          - unzip
+          - upx
+          - wget
+          - xvfb
+          - xz-utils
+          - zip
+          - zsync
