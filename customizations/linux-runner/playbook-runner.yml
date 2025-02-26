@@ -195,7 +195,15 @@
         install_recommends: false
 
     - name: install Pipx
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
       pip:
+        name: pipx
+
+    - name: install Pipx
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      # recommended way for Ubuntu 23.04+
+      # https://github.com/pypa/pipx?tab=readme-ov-file#on-linux
+      apt:
         name: pipx
 
     - name: install RubyGems
