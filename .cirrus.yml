@@ -33,22 +33,17 @@ task:
     - "Install dependencies ($WORKER_NAME)"
 
   matrix:
-    - name: Ubuntu 22.04
+    - name: Ubuntu $VM_RELEASE
       env:
         VM_NAME: "ubuntu"
-        VM_RELEASE: "22.04"
+        matrix:
+          - VM_RELEASE: "24.04"
+            URL: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+            LATEST: latest
+          - VM_RELEASE: "22.04"
+            URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
-        URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
-        USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
-        LATEST: latest
-    - name: Ubuntu 24.04
-      env:
-        VM_NAME: "ubuntu"
-        VM_RELEASE: "24.04"
-        WORKER_NAME: $WORKER_NAME_ARM64
-        VM_ARCH: "arm64"
-        URL: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
     - name: Debian
       env:
@@ -77,34 +72,39 @@ task:
         URL:  https://dl.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base.latest.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
-    - name: Linux Runner ($VM_ARCH)
+    - name: Linux Runner ($VM_RELEASE $VM_ARCH)
       env:
         VM_NAME: "ubuntu"
-        VM_RELEASE: "22.04"
+        matrix:
+          - VM_RELEASE: "24.04"
+            URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
+            LATEST: latest
+          - VM_RELEASE: "22.04"
+            URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
         matrix:
           - VM_ARCH: "arm64"
             WORKER_NAME: $WORKER_NAME_ARM64
           - VM_ARCH: "amd64"
             WORKER_NAME: $WORKER_NAME_AMD64
-        URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner"
         CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH"
-        LATEST: latest
-    - name: Linux Runner w/ GPU ($VM_ARCH)
+    - name: Linux Runner w/ GPU ($VM_RELEASE $VM_ARCH)
       depends_on:
-        - "Linux Runner ($VM_ARCH)"
+        - "Linux Runner ($VM_RELEASE $VM_ARCH)"
       env:
         VM_NAME: "ubuntu"
-        VM_RELEASE: "22.04"
         matrix:
-          - VM_ARCH: "amd64"
-            WORKER_NAME: $WORKER_NAME_AMD64
-        URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
+          - VM_RELEASE: "24.04"
+            URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
+            LATEST: latest
+          - VM_RELEASE: "22.04"
+            URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
+        VM_ARCH: "amd64"
+        WORKER_NAME: $WORKER_NAME_AMD64
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
         CUSTOMIZATION_PATH: "customizations/linux-runner-gpu"
         CUSTOMIZATION_IMAGE: "ubuntu-runner-$VM_ARCH-gpu"
-        LATEST: latest
 
   persistent_worker:
     labels:
