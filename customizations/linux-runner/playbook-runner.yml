@@ -800,8 +800,8 @@
     # Installed apt packages[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
-    - apt:
-        when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+    - when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+      apt:
         install_recommends: false
         name:
           - acl
@@ -885,8 +885,8 @@
           - zip
           - zsync
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
-    - apt:
-        when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+    - when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+      apt:
         install_recommends: false
         name:
           - acl
