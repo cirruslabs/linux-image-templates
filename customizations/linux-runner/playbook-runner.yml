@@ -257,7 +257,7 @@
         global: true
 
     - name: install Bazel
-      when: ansible_architecture == "x86_64" # crushes on Ubuntu 24.04 on aarch64
+      when: ansible_architecture == "x86_64" # crashes on Ubuntu 24.04 on aarch64
       command: bazel version
 
     # Skip installing Bicep (language for deploying Azure resources)
