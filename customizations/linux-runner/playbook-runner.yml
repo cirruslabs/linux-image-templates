@@ -797,10 +797,11 @@
 
     # Not caching any Docker images.
 
-    # Installed apt packages[1]
+    # Installed apt packages[1][2]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
-    - when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+    # [2]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
+    - name: Install common packages
       apt:
         install_recommends: false
         name:
@@ -826,9 +827,51 @@
           - ftp
           - gcc
           - gnupg2
-          - imagemagick
           - iproute2
           - iputils-ping
+          - libssl-dev
+          - libtool
+          - libyaml-dev
+          - locales
+          - lz4
+          - m4
+          - make
+          - net-tools
+          - openssh-client
+          - p7zip-full
+          - p7zip-rar
+          - parallel
+          - patchelf
+          - pigz
+          - pkg-config
+          - pollinate
+          - python-is-python3
+          - rpm
+          - rsync
+          - shellcheck
+          - ssh
+          - sshpass
+          - sudo
+          - swig
+          - tar
+          - telnet
+          - texinfo
+          - time
+          - tk
+          - tzdata
+          - unzip
+          - upx
+          - wget
+          - xvfb
+          - xz-utils
+          - zip
+          - zsync
+
+    - name: Install Ubuntu 22.04 specific packages
+      apt:
+        install_recommends: false
+        name:
+          - imagemagick
           - libc++-dev
           - libc++abi-dev
           - libc6-dev
@@ -841,123 +884,27 @@
           - libmagickcore-dev
           - libmagickwand-dev
           - libsecret-1-dev
-          - libssl-dev
-          - libtool
           - libunwind8
           - libxkbfile-dev
           - libxss1
-          - libyaml-dev
-          - locales
-          - lz4
-          - m4
-          - make
-          - net-tools
           - netcat
-          - openssh-client
-          - p7zip-full
-          - p7zip-rar
-          - parallel
           - pass
-          - patchelf
-          - pigz
-          - pkg-config
-          - pollinate
-          - python-is-python3
-          - rpm
-          - rsync
-          - shellcheck
-          - ssh
-          - sshpass
-          - sudo
-          - swig
-          - tar
-          - telnet
-          - texinfo
-          - time
-          - tk
-          - tzdata
-          - unzip
-          - upx
-          - wget
           - xorriso
-          - xvfb
-          - xz-utils
-          - zip
-          - zsync
-    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
-    - when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+
+    - name: Install Ubuntu 24.04 specific packages
       apt:
         install_recommends: false
         name:
-          - acl
-          - aria2
-          - autoconf
-          - automake
-          - binutils
-          - bison
-          - brotli
-          - bzip2
-          - coreutils
-          - curl
-          - dbus
-          - dnsutils
-          - dpkg
-          - dpkg-dev
-          - fakeroot
-          - file
-          - findutils
-          - flex
-          - fonts-noto-color-emoji
-          - ftp
           - g++
-          - gcc
-          - gnupg2
           - haveged
-          - iproute2
-          - iputils-ping
           - jq
           - libsqlite3-dev
-          - libssl-dev
-          - libtool
-          - libyaml-dev
-          - locales
-          - lz4
-          - m4
-          - make
           - mediainfo
           - mercurial
-          - net-tools
           - netcat-openbsd
-          - openssh-client
-          - p7zip-full
-          - p7zip-rar
-          - parallel
-          - patchelf
-          - pigz
-          - pkg-config
-          - pollinate
-          - python-is-python3
-          - rpm
-          - rsync
-          - shellcheck
           - sphinxsearch
           - sqlite3
-          - ssh
-          - sshpass
-          - sudo
-          - swig
           - systemd-coredump
-          - tar
-          - telnet
-          - texinfo
-          - time
-          - tk
           - tree
-          - tzdata
-          - unzip
-          - upx
-          - wget
-          - xvfb
-          - xz-utils
-          - zip
-          - zsync
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
