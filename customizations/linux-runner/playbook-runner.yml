@@ -195,7 +195,15 @@
         install_recommends: false
 
     - name: install Pipx
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
       pip:
+        name: pipx
+
+    - name: install Pipx
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      # recommended way for Ubuntu 23.04+
+      # https://github.com/pypa/pipx?tab=readme-ov-file#on-linux
+      apt:
         name: pipx
 
     - name: install RubyGems
@@ -249,7 +257,8 @@
         global: true
 
     - name: install Bazel
-      command: bazel
+      when: ansible_architecture == "x86_64" # crashes on Ubuntu 24.04 on aarch64
+      command: bazel version
 
     # Skip installing Bicep (language for deploying Azure resources)
     # because it has no .deb/Snap package(s) and can be easily
@@ -561,9 +570,15 @@
     # Java[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#java
-    - name: install Java
+    - name: install Java 19
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
       apt:
         name: openjdk-19-jdk-headless
+        install_recommends: false
+    - name: install Java 21
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      apt:
+        name: openjdk-21-jdk-headless
         install_recommends: false
 
     # PHP Tools[1]
@@ -782,10 +797,13 @@
 
     # Not caching any Docker images.
 
-    # Installed apt packages[1]
+    # Installed apt packages[1][2]
     #
-    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-images
-    - apt:
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
+    # [2]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
+    - name: Install common packages
+      apt:
+        install_recommends: false
         name:
           - acl
           - aria2
@@ -809,38 +827,20 @@
           - ftp
           - gcc
           - gnupg2
-          - imagemagick
           - iproute2
           - iputils-ping
-          - libc++-dev
-          - libc++abi-dev
-          - libc6-dev
-          - libcurl4
-          - libgbm-dev
-          - libgconf-2-4
-          - libgsl-dev
-          - libgtk-3-0
-          - libmagic-dev
-          - libmagickcore-dev
-          - libmagickwand-dev
-          - libsecret-1-dev
           - libssl-dev
           - libtool
-          - libunwind8
-          - libxkbfile-dev
-          - libxss1
           - libyaml-dev
           - locales
           - lz4
           - m4
           - make
           - net-tools
-          - netcat
           - openssh-client
           - p7zip-full
           - p7zip-rar
           - parallel
-          - pass
           - patchelf
           - pigz
           - pkg-config
@@ -862,9 +862,49 @@
           - unzip
           - upx
           - wget
-          - xorriso
           - xvfb
           - xz-utils
           - zip
           - zsync
+
+    - name: Install Ubuntu 22.04 specific packages
+      apt:
         install_recommends: false
+        name:
+          - imagemagick
+          - libc++-dev
+          - libc++abi-dev
+          - libc6-dev
+          - libcurl4
+          - libgbm-dev
+          - libgconf-2-4
+          - libgsl-dev
+          - libgtk-3-0
+          - libmagic-dev
+          - libmagickcore-dev
+          - libmagickwand-dev
+          - libsecret-1-dev
+          - libunwind8
+          - libxkbfile-dev
+          - libxss1
+          - netcat
+          - pass
+          - xorriso
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+
+    - name: Install Ubuntu 24.04 specific packages
+      apt:
+        install_recommends: false
+        name:
+          - g++
+          - haveged
+          - jq
+          - libsqlite3-dev
+          - mediainfo
+          - mercurial
+          - netcat-openbsd
+          - sphinxsearch
+          - sqlite3
+          - systemd-coredump
+          - tree
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'

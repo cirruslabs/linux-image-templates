@@ -117,7 +117,7 @@ task:
     RAW_IMAGE: image.raw
 
   download_cloud_image_disk_script:
-    - wget -O "$QCOW2_IMAGE" "$URL" || true
+    - wget --quiet -O "$QCOW2_IMAGE" "$URL" || true
 
   convert_cloud_image_disk_script:
     - qemu-img convert -p -f qcow2 -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
