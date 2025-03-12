@@ -25,14 +25,14 @@
     # Retrieve an appropriate toolset for the Ubuntu version that we're provisioning
     - name: retrieve Ubuntu 22.04 toolset
       uri:
-        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2004.json
+        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2204.json
         return_content: yes
       register: ubuntu_toolset_raw
       when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
 
     - name: retrieve Ubuntu 24.04 toolset
       uri:
-        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2204.json
+        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2404.json
         return_content: yes
       register: ubuntu_toolset_raw
       when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
