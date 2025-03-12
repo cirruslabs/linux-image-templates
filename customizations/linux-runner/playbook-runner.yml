@@ -45,7 +45,7 @@
     - name: parse Ubuntu 24.04 toolset contents as JSON
       set_fact:
         ubuntu_toolset: "{{ ubuntu_2404_toolset_raw.content | from_json }}"
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
 
     # Language and Runtime[1]
     #
