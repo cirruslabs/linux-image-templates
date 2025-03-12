@@ -821,17 +821,34 @@
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
     # [2]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
+    - name: Create a list of amd64-only and virtual APT packages
+      set_fact:
+        apt_amd64_only_packages: ["lib32z1", "netcat"]
+
     - name: Install vital APT packages
       apt:
         install_recommends: false
-        name: "{{ ubuntu_toolset.apt.vital_packages }}"
+        name: "{{ ubuntu_toolset.apt.vital_packages | difference(apt_amd64_only_packages) }}"
 
     - name: Install common APT packages
       apt:
         install_recommends: false
-        name: "{{ ubuntu_toolset.apt.common_packages }}"
+        name: "{{ ubuntu_toolset.apt.common_packages | difference(apt_amd64_only_packages) }}"
 
     - name: Install cmd APT packages
       apt:
         install_recommends: false
-        name: "{{ ubuntu_toolset.apt.cmd_packages }}"
+        name: "{{ ubuntu_toolset.apt.cmd_packages | difference(apt_amd64_only_packages) }}"
+
+    - name: Install amd64-only APT packages
+      apt:
+        install_recommends: false
+        name:
+          - lib32z1
+      when: ansible_architecture == "x86_64"
+
+    - name: Install virtual APT packages
+      apt:
+        install_recommends: false
+        name:
+          - netcat-openbsd
