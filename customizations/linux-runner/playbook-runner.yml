@@ -829,9 +829,9 @@
     - name: Install common APT packages
       apt:
         install_recommends: false
-        name: "{{ ubuntu_toolset.apt.common }}"
+        name: "{{ ubuntu_toolset.apt.common_packages }}"
 
     - name: Install cmd APT packages
       apt:
         install_recommends: false
-        name: "{{ ubuntu_toolset.apt.cmd }}"
+        name: "{{ ubuntu_toolset.apt.cmd_packages }}"
