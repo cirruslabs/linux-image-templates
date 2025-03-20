@@ -793,7 +793,7 @@
 
     # Cached Docker images[1]
     #
-    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-image
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-images
 
     - name: Pull Docker images
       docker_image:
