@@ -791,7 +791,9 @@
       become: no
       when: ansible_architecture == "x86_64"
 
-    # Cached Docker images
+    # Cached Docker images[1]
+    #
+    # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#cached-docker-image
 
     - name: Pull Docker images
       docker_image:
@@ -799,8 +801,6 @@
         source: pull
       with_items:
         - "mcr.microsoft.com/playwright:latest"
-
-    # Not caching any Docker images.
 
     # Installed apt packages[1][2]
     #
