@@ -22,6 +22,31 @@
         group: admin
         state: directory
 
+    # Retrieve an appropriate toolset for the Ubuntu version that we're provisioning
+    - name: retrieve Ubuntu 22.04 toolset
+      uri:
+        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2204.json
+        return_content: yes
+      register: ubuntu_2204_toolset_raw
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+
+    - name: retrieve Ubuntu 24.04 toolset
+      uri:
+        url: https://raw.githubusercontent.com/actions/runner-images/refs/heads/main/images/ubuntu/toolsets/toolset-2404.json
+        return_content: yes
+      register: ubuntu_2404_toolset_raw
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+
+    - name: parse Ubuntu 22.04 toolset contents as JSON
+      set_fact:
+        ubuntu_toolset: "{{ ubuntu_2204_toolset_raw.content | from_json }}"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+
+    - name: parse Ubuntu 24.04 toolset contents as JSON
+      set_fact:
+        ubuntu_toolset: "{{ ubuntu_2404_toolset_raw.content | from_json }}"
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+
     # Language and Runtime[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#language-and-runtime
@@ -184,6 +209,12 @@
 
     # Skip installing NPM as it's already provided by the Node.js
 
+    - name: install NPM modules listed in the toolset JSON
+      npm:
+        name: "{{ item }}"
+        global: true
+      loop: "{{ ubuntu_toolset.node_modules | map(attribute='name') | list }}"
+
     - name: install NuGet
       apt:
         name: nuget
@@ -225,10 +256,7 @@
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#project-management
 
-    - name: install Lerna
-      npm:
-        name: lerna
-        global: true
+    # Lerna installation is automated via toolset JSON
 
     - name: install Maven
       apt:
@@ -423,9 +451,7 @@
         name: packer
         install_recommends: false
 
-    # Not installing Parcel because it can be easily installed via npm[1]
-    #
-    # [1]: https://parceljs.org/getting-started/webapp/#installation
+    # Parcel installation is automated via toolset JSON
 
     - name: install Podman
       apt:
@@ -802,114 +828,38 @@
       with_items:
         - "mcr.microsoft.com/playwright:latest"
 
-    # Installed apt packages[1][2]
+    # Install APT packages[1][2]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#installed-apt-packages
     # [2]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md#installed-apt-packages
-    - name: Install common packages
-      apt:
-        install_recommends: false
-        name:
-          - acl
-          - aria2
-          - autoconf
-          - automake
-          - binutils
-          - bison
-          - brotli
-          - bzip2
-          - coreutils
-          - curl
-          - dbus
-          - dnsutils
-          - dpkg
-          - dpkg-dev
-          - fakeroot
-          - file
-          - findutils
-          - flex
-          - fonts-noto-color-emoji
-          - ftp
-          - gcc
-          - gnupg2
-          - iproute2
-          - iputils-ping
-          - libssl-dev
-          - libtool
-          - libyaml-dev
-          - locales
-          - lz4
-          - m4
-          - make
-          - net-tools
-          - openssh-client
-          - p7zip-full
-          - p7zip-rar
-          - parallel
-          - patchelf
-          - pigz
-          - pkg-config
-          - pollinate
-          - python-is-python3
-          - rpm
-          - rsync
-          - shellcheck
-          - ssh
-          - sshpass
-          - sudo
-          - swig
-          - tar
-          - telnet
-          - texinfo
-          - time
-          - tk
-          - tzdata
-          - unzip
-          - upx
-          - wget
-          - xvfb
-          - xz-utils
-          - zip
-          - zsync
+    - name: Create a list of amd64-only and virtual APT packages
+      set_fact:
+        apt_amd64_only_packages: ["lib32z1", "netcat"]
 
-    - name: Install Ubuntu 22.04 specific packages
+    - name: Install vital APT packages
       apt:
         install_recommends: false
-        name:
-          - imagemagick
-          - libc++-dev
-          - libc++abi-dev
-          - libc6-dev
-          - libcurl4
-          - libgbm-dev
-          - libgconf-2-4
-          - libgsl-dev
-          - libgtk-3-0
-          - libmagic-dev
-          - libmagickcore-dev
-          - libmagickwand-dev
-          - libsecret-1-dev
-          - libunwind8
-          - libxkbfile-dev
-          - libxss1
-          - netcat
-          - pass
-          - xorriso
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+        name: "{{ ubuntu_toolset.apt.vital_packages | difference(apt_amd64_only_packages) }}"
 
-    - name: Install Ubuntu 24.04 specific packages
+    - name: Install common APT packages
+      apt:
+        install_recommends: false
+        name: "{{ ubuntu_toolset.apt.common_packages | difference(apt_amd64_only_packages) }}"
+
+    - name: Install cmd APT packages
+      apt:
+        install_recommends: false
+        name: "{{ ubuntu_toolset.apt.cmd_packages | difference(apt_amd64_only_packages) }}"
+
+    - name: Install amd64-only APT packages
       apt:
         install_recommends: false
         name:
-          - g++
-          - haveged
-          - jq
-          - libsqlite3-dev
-          - mediainfo
-          - mercurial
+          - lib32z1
+      when: ansible_architecture == "x86_64"
+
+    - name: Install virtual APT packages
+      apt:
+        install_recommends: false
+        name:
           - netcat-openbsd
-          - sphinxsearch
-          - sqlite3
-          - systemd-coredump
-          - tree
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
