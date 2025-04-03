@@ -1,0 +1,35 @@
+- name: install setup-info-generator, copy setup info template and generate setup info
+  hosts: default
+  become: yes
+  tasks:
+    - name: install APT transport for downloading packages via HTTPS and common X.509 certificates
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+        update_cache: true
+        cache_valid_time: 3600
+    - name: add Cirrus Labs repository
+      apt_repository:
+        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
+        filename: cirruslabs
+    - name: install setup-info-generator
+      apt:
+        name: setup-info-generator
+    - name: copy setup info template
+      copy:
+        src: setup-info-template.json
+        dest: /tmp/setup-info-template.json
+    - name: generate setup info
+      shell: "setup-info-generator < /tmp/setup-info-template.json"
+      register: setup_info_generator
+    - name: write setup info to its final destination
+      copy:
+        content: "{{ setup_info_generator.stdout }}"
+        dest: "/home/admin/actions-runner/.setup_info"
+        owner: admin
+        group: admin
+    - name: cleanup setup info template
+      file:
+        path: /tmp/setup-info-template.json
+        state: absent
