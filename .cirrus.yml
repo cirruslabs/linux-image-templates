@@ -57,10 +57,10 @@ task:
     - name: Fedora
       env:
         VM_NAME: "fedora"
-        VM_RELEASE: "39"
+        VM_RELEASE: "42"
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
-        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/aarch64/images/Fedora-Cloud-Base-39-1.5.aarch64.qcow2
+        URL: https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
     - name: Rocky Linux 9
