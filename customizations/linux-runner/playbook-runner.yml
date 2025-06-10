@@ -8,6 +8,11 @@
         update_cache: true
         cache_valid_time: 3600
 
+    - name: upgrade packages on Ubuntu 24.04
+      apt:
+        upgrade: yes
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+
     - name: create RUNNER_TOOL_CACHE directory
       file:
         path: /opt/hostedtoolcache
