@@ -43,3 +43,18 @@
       systemd_service:
         name: apport
         enabled: false
+
+- name: apply boot time optimizations
+  hosts: default
+  become: true
+
+  tasks:
+    - name: uninstall systemd-timesyncd
+      apt:
+        name: systemd-timesyncd
+        state: absent
+
+    - name: install chrony
+      apt:
+        name: chrony
+        state: present
