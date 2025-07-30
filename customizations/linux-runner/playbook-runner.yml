@@ -863,3 +863,24 @@
         install_recommends: false
         name:
           - netcat-openbsd
+
+    # Backwards compatibility with GitHub Actions runner images[1]
+    #
+    # [1]: https://github.com/actions/runner-images/pull/1107
+    - name: ensure that localhost resolves to ::1 too, in addition to 127.0.0.1
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^::1\s+.*$'
+        line: '::1 localhost ip6-localhost ip6-loopback'
+        backrefs: yes
+      register: etc_hosts_result
+
+    - name: ensure that we've patched the /etc/hosts
+      assert:
+        that:
+          - etc_hosts_result.changed
+        success_msg: "/etc/hosts was successfully patched"
+        fail_msg: >-
+          failed to find '::1 localhost ip6-localhost ip6-loopback'
+          entry in /etc/hosts, perhaps its format had changed or we've
+          already patched it?
