@@ -34,4 +34,11 @@ build {
       "cat /tmp/99_cirruslabs.cfg | sudo tee /etc/cloud/cloud.cfg.d/99_cirruslabs.cfg"
     ]
   }
+
+  provisioner "ansible" {
+    playbook_file = "./playbook.yml"
+
+    # scp command is only available after we install the openssh-client
+    use_sftp = true
+  }
 }

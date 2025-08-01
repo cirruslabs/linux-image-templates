@@ -1,0 +1,35 @@
+- hosts: default
+  become: true
+
+  tasks:
+    # Guest agent for Tart VMs installation: Debian-based
+    - name: install apt-transport-https and ca-certificates packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+        update_cache: yes
+        cache_valid_time: 3600
+      when: ansible_os_family == 'Debian'
+    - name: add Cirrus Labs repository
+      apt_repository:
+        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
+        filename: cirruslabs
+      when: ansible_os_family == 'Debian'
+    - name: install Guest agent for Tart VMs
+      apt:
+        name: tart-guest-agent
+      when: ansible_os_family == 'Debian'
+
+    # Guest agent for Tart VMs installation: RedHat-based
+    - name: add Cirrus Labs repository
+      yum_repository:
+        name: cirruslabs
+        description: "Cirrus Labs repository"
+        baseurl: "https://yum.fury.io/cirruslabs/"
+        gpgcheck: no
+      when: ansible_os_family == 'RedHat'
+    - name: install Guest agent for Tart VMs
+      dnf:
+        name: tart-guest-agent
+      when: ansible_os_family == 'RedHat'
