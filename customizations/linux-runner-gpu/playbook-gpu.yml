@@ -14,6 +14,7 @@
         name:
           - nvidia-dkms-550-server
           - nvidia-driver-550-server
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
 
     - name: install GnuPG (required by the apt_key module)
       apt:
@@ -43,3 +44,10 @@
 
     - name: configure Docker to use the CUDA container toolkit
       command: sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
+
+    - name: install NVIDIA GPU driver
+      apt:
+        name:
+          - nvidia-dkms-580
+          - nvidia-driver-580
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
