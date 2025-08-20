@@ -11,6 +11,10 @@ packer {
   }
 }
 
+variable vm_base_name {
+  type = string
+}
+
 variable "vm_name" {
   type = string
 }
