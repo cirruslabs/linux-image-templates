@@ -11,12 +11,16 @@ packer {
   }
 }
 
+variable vm_base_name {
+  type = string
+}
+
 variable "vm_name" {
   type = string
 }
 
 source "tart-cli" "tart" {
-  vm_base_name = "ghcr.io/cirruslabs/ubuntu-runner-amd64:latest"
+  vm_base_name = "${var.vm_base_name}"
   vm_name = "${var.vm_name}"
   disk_size_gb = 40
   headless = false
