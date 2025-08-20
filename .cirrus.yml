@@ -157,4 +157,5 @@ task:
 
   always:
     cleanup_script:
+      - tart stop "$VM_ID" || true
       - tart delete "$VM_ID" || true
