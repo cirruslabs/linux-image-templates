@@ -96,10 +96,10 @@ task:
         VM_NAME: "ubuntu"
         matrix:
           - VM_RELEASE: "24.04"
-            URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
+            VM_BASE_NAME: "ghcr.io/cirruslabs/ubuntu-runner-amd64:24.04"
             LATEST: latest
           - VM_RELEASE: "22.04"
-            URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
+            VM_BASE_NAME: "ghcr.io/cirruslabs/ubuntu-runner-amd64:22.04"
         VM_ARCH: "amd64"
         WORKER_NAME: $WORKER_NAME_AMD64
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
@@ -117,21 +117,26 @@ task:
     RAW_IMAGE: image.raw
 
   download_cloud_image_disk_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
     - wget --quiet -O "$QCOW2_IMAGE" "$URL" || true
 
   convert_cloud_image_disk_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
     - qemu-img convert -p -f qcow2 -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
 
   generate_cloud_init_image_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
     - echo "local-hostname: $VM_NAME" > cloud-init/meta-data
     - cat "$USER_DATA_FIXTURE" > cloud-init/user-data
     - mkisofs -output cloud-init.iso -volid cidata -joliet -rock cloud-init/
 
   create_vm_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
     - tart create --linux "$VM_ID"
     - mv "$RAW_IMAGE" ~/.tart/vms/"$VM_ID"/disk.img
 
   initialize_vm_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
     - packer init .
     - packer build -var vm_name="$VM_ID" .
 
@@ -139,7 +144,7 @@ task:
     - '[ -z "$CUSTOMIZATION_PATH" ] && { echo "Nothing to customize"; exit 0; }'
     - cd "$CUSTOMIZATION_PATH"
     - packer init .
-    - packer build -var vm_name="$VM_ID" .
+    - packer build -var vm_name="$VM_ID" -var vm_base_name="$VM_BASE_NAME" .
 
   info_script: tart get "$VM_ID"
 
