@@ -8,6 +8,10 @@
         update_cache: true
         cache_valid_time: 3600
 
+    - name: upgrade packages
+      apt:
+        upgrade: yes
+
     - name: create RUNNER_TOOL_CACHE directory
       file:
         path: /opt/hostedtoolcache
