@@ -36,10 +36,19 @@
         url: "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin"
         dest: /etc/apt/preferences.d/cuda.pref
 
-    - name: install CUDA and container toolkits
+    - name: install CUDA 12
+      apt:
+        name: cuda-toolkit-12
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
+
+    - name: install CUDA 13
+      apt:
+        name: cuda-toolkit-13
+      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '24.04'
+
+    - name: install container toolkit
       apt:
         name:
-          - cuda-toolkit
           - nvidia-container-toolkit
 
     - name: configure Docker to use the CUDA container toolkit
