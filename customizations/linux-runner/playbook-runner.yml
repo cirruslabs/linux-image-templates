@@ -172,21 +172,10 @@
         name: build-essential
         install_recommends: false
 
-    - name: add Balto key for Helm
-      apt_key:
-        id: 81BF832E2F19CD2AA0471959294AC4827C1A168A
-        url: "https://baltocdn.com/helm/signing.asc"
-        keyring: /etc/apt/trusted.gpg.d/balto-helm.gpg
-
-    - name: add Balto Helm repository
-      apt_repository:
-        repo: "deb [signed-by=/etc/apt/trusted.gpg.d/balto-helm.gpg] https://baltocdn.com/helm/stable/debian/ all main"
-        filename: balto-helm
-
     - name: install Helm
-      apt:
+      snap:
         name: helm
-        install_recommends: false
+        classic: true
 
     # Only install Homebrew on amd64 as it's not supported on arm64 Linux yet[1]
     #
