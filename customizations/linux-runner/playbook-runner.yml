@@ -819,6 +819,9 @@
         name: "{{ item }}"
         source: pull
       with_items:
+        - "docker.io/babashka/babashka:latest"
+        - "moby/buildkit:latest"
+        - "moby/buildkit:buildx-stable-1"
         - "mcr.microsoft.com/playwright:latest"
 
     # Install APT packages[1][2]
