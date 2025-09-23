@@ -799,10 +799,16 @@
     - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
       with_items:
         - "platform-tools"
-        - "emulator"
         - "platforms;android-{{ latest_platforms_android_version }}"
         - "build-tools;{{ latest_build_tools_version }}"
       become: no
+
+
+    - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
+      with_items:
+        - "emulator"
+      become: no
+      when: ansible_architecture == "x86_64"
 
     # Cached Docker images[1]
     #
