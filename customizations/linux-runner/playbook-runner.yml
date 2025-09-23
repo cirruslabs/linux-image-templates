@@ -819,11 +819,19 @@
         name: "{{ item }}"
         source: pull
       with_items:
+        - "mcr.microsoft.com/playwright:latest"
+        # temporary
         - "docker.io/babashka/babashka:latest"
         - "moby/buildkit:latest"
         - "moby/buildkit:buildx-stable-1"
         - "public.ecr.aws/docker/library/python:3.11.10-slim-bookworm"
-        - "mcr.microsoft.com/playwright:latest"
+        - "node:20.10.0"
+        - "amazon/aws-lambda-nodejs:latest"
+        - "public.ecr.aws/nginx/nginx:1.23-alpine"
+        - "public.ecr.aws/docker/library/postgres:15.3-alpine"
+        - "dimitri/pgloader:latest"
+        - "amazon/aws-for-fluent-bit:stable"
+        - "public.ecr.aws/datadog/lambda-extension:60"
 
     # Install APT packages[1][2]
     #
