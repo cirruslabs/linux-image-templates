@@ -822,6 +822,7 @@
         - "docker.io/babashka/babashka:latest"
         - "moby/buildkit:latest"
         - "moby/buildkit:buildx-stable-1"
+        - "public.ecr.aws/docker/library/python:3.11.10-slim-bookworm"
         - "mcr.microsoft.com/playwright:latest"
 
     # Install APT packages[1][2]
