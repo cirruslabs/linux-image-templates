@@ -261,9 +261,9 @@
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#tools
 
     - name: install Ansible
-      community.general.pipx:
+      apt:
         name: ansible
-        install_deps: true
+        install_recommends: false
 
     # Skip installing apt-fast for now because it brings no
     # new functionality, it's just an optimization for APT
