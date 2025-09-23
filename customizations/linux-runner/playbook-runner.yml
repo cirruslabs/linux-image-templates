@@ -261,9 +261,9 @@
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#tools
 
     - name: install Ansible
-      community.general.pipx:
+      apt:
         name: ansible
-        install_deps: true
+        install_recommends: false
 
     # Skip installing apt-fast for now because it brings no
     # new functionality, it's just an optimization for APT
@@ -718,7 +718,6 @@
         owner: admin
         group: admin
         state: directory
-      when: ansible_architecture == "x86_64"
 
     - copy:
         content: |
@@ -733,7 +732,6 @@
         owner: admin
         group: admin
         state: directory
-      when: ansible_architecture == "x86_64"
 
     - uri:
         url: https://dl.google.com/android/repository/repository2-1.xml
@@ -791,15 +789,12 @@
         remote_src: yes
         dest: /opt/android-sdk/cmdline-tools
       become: no
-      when: ansible_architecture == "x86_64"
 
     - command: mv /opt/android-sdk/cmdline-tools/cmdline-tools /opt/android-sdk/cmdline-tools/latest
       become: no
-      when: ansible_architecture == "x86_64"
 
     - shell: yes | /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
       become: no
-      when: ansible_architecture == "x86_64"
 
     - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
       with_items:
@@ -808,7 +803,6 @@
         - "platforms;android-{{ latest_platforms_android_version }}"
         - "build-tools;{{ latest_build_tools_version }}"
       become: no
-      when: ansible_architecture == "x86_64"
 
     # Cached Docker images[1]
     #
