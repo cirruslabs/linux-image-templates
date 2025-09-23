@@ -13,7 +13,7 @@ variable "vm_name" {
 
 source "tart-cli" "tart" {
   vm_name = "${var.vm_name}"
-  disk_size_gb = 25
+  disk_size_gb = 20
   run_extra_args = ["--disk", "cloud-init.iso"]
   headless = false
   disable_vnc = true
