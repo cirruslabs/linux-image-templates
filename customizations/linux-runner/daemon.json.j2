@@ -1,0 +1,8 @@
+{
+  "mtu": {{ docker_mtu }},
+  "default-network-opts": {
+    "bridge": {
+      "com.docker.network.driver.mtu": "{{ docker_mtu }}"
+    }
+  }
+}
