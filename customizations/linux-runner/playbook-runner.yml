@@ -1,7 +1,8 @@
 - name: install software available in the ubuntu-22.04 runner image
   hosts: default
   become: true
-
+  vars:
+    docker_mtu: 1400
   tasks:
     - name: update APT cache
       apt:
@@ -332,12 +333,33 @@
         name: docker-ce-cli
         install_recommends: false
 
+    - name: ensure that Docker Server configuration directory exists
+      file:
+        path: /etc/docker
+        state: directory
+
+    - name: configure Docker Server
+      template:
+        src: daemon.json.j2
+        dest: /etc/docker/daemon.json
+
     - name: install Docker Server
       apt:
         name:
           - docker-ce
           - containerd.io
         install_recommends: false
+
+    - name: gather network facts once more
+      ansible.builtin.setup:
+        gather_subset:
+          - network
+
+    - name: ensure that docker0 bridge interface has a correct MTU
+      assert:
+        that:
+          - ansible_facts.docker0.mtu == docker_mtu
+        quiet: yes
 
     # Skip installing Fastlane
     #
