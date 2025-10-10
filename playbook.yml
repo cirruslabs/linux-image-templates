@@ -5,10 +5,10 @@
     - name: upgrade to a HWE kernel
       apt:
         name: "linux-generic-hwe-{{ ansible_distribution_version }}"
-      when: ansible_os_family == 'Ubuntu'
+      when: ansible_distribution == 'Ubuntu'
     - name: reboot for the new kernel to take effect and to ensure that a VM is bootable
       reboot:
-      when: ansible_os_family == 'Ubuntu'
+      when: ansible_distribution == 'Ubuntu'
     # Guest agent for Tart VMs installation: Debian-based
     - name: install apt-transport-https and ca-certificates packages
       apt:
