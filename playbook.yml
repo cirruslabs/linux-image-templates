@@ -2,6 +2,18 @@
   become: true
 
   tasks:
+    - name: update APT cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_distribution == 'Ubuntu'
+    - name: upgrade to a HWE kernel
+      apt:
+        name: "linux-generic-hwe-{{ ansible_distribution_version }}"
+      when: ansible_distribution == 'Ubuntu'
+    - name: reboot for the new kernel to take effect and to ensure that a VM is bootable
+      reboot:
+      when: ansible_distribution == 'Ubuntu'
     # Guest agent for Tart VMs installation: Debian-based
     - name: install apt-transport-https and ca-certificates packages
       apt:
