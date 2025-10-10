@@ -8,6 +8,21 @@
         update_cache: true
         cache_valid_time: 3600
 
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist # Perform a full distribution upgrade
+        force_apt_get: yes # Force usage of apt-get instead of aptitude
+
+    - name: Check if reboot is required
+      stat:
+        path: /var/run/reboot-required
+      register: reboot_required_file
+
+    - name: Reboot server if required
+      reboot:
+        test_command: uptime # Command to check if server is back online
+      when: reboot_required_file.stat.exists # Only reboot if the file exists
+
     - name: upgrade packages
       apt:
         upgrade: yes
