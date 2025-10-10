@@ -2,6 +2,11 @@
   become: true
 
   tasks:
+    - name: update APT cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+      when: ansible_distribution == 'Ubuntu'
     - name: upgrade to a HWE kernel
       apt:
         name: "linux-generic-hwe-{{ ansible_distribution_version }}"
