@@ -2,6 +2,10 @@
   become: true
 
   tasks:
+    - name: upgrade to a HWE kernel
+      apt:
+        name: "linux-generic-hwe-{{ ansible_distribution_version }}"
+      when: ansible_os_family == 'Ubuntu'
     # Guest agent for Tart VMs installation: Debian-based
     - name: install apt-transport-https and ca-certificates packages
       apt:
