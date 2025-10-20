@@ -36,9 +36,17 @@ build {
   }
 
   provisioner "ansible" {
-    playbook_file = "./playbook.yml"
+    playbook_file = "./ubuntu-hwe-kernel.yml"
 
     # scp command is only available after we install the openssh-client
     use_sftp = true
   }
+
+  # Temporarily disabled, see https://github.com/cirruslabs/linux-image-templates/pull/72.
+  # provisioner "ansible" {
+  #   playbook_file = "./tart-guest-agent.yml"
+  #
+  #   # scp command is only available after we install the openssh-client
+  #   use_sftp = true
+  # }
 }

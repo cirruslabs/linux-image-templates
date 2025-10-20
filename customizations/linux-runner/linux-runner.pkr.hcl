@@ -71,10 +71,12 @@ build {
     script = "install-actions-runner.sh"
   }
 
-  provisioner "ansible" {
-    playbook_file = "./playbook-setup-info-generator.yml"
-
-    # scp command is only available after we install the openssh-client
-    use_sftp = true
-  }
+  # Temporarily disabled, see https://github.com/cirruslabs/linux-image-templates/pull/72.
+  #
+  # provisioner "ansible" {
+  #   playbook_file = "./playbook-setup-info-generator.yml"
+  #
+  #   # scp command is only available after we install the openssh-client
+  #   use_sftp = true
+  # }
 }
