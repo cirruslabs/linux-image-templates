@@ -32,6 +32,12 @@
       apt:
         name: tart-guest-agent
       when: ansible_os_family == 'Debian'
+    - name: remove Cirrus Labs repository
+      apt_repository:
+        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
+        filename: cirruslabs
+        state: absent
+      when: ansible_os_family == 'Debian'
 
     # Guest agent for Tart VMs installation: RedHat-based
     - name: add Cirrus Labs repository
@@ -44,4 +50,12 @@
     - name: install Guest agent for Tart VMs
       dnf:
         name: tart-guest-agent
+      when: ansible_os_family == 'RedHat'
+    - name: remove Cirrus Labs repository
+      yum_repository:
+        name: cirruslabs
+        description: "Cirrus Labs repository"
+        baseurl: "https://yum.fury.io/cirruslabs/"
+        gpgcheck: no
+        state: absent
       when: ansible_os_family == 'RedHat'

@@ -16,6 +16,11 @@
     - name: install setup-info-generator
       apt:
         name: setup-info-generator
+    - name: remove Cirrus Labs repository
+      apt_repository:
+        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
+        filename: cirruslabs
+        state: absent
     - name: copy setup info template
       copy:
         src: setup-info-template.json
