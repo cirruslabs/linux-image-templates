@@ -2,20 +2,28 @@
   hosts: default
   become: yes
   tasks:
-    - name: install APT transport for downloading packages via HTTPS and common X.509 certificates
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-        update_cache: true
-        cache_valid_time: 3600
-    - name: add Cirrus Labs repository
-      apt_repository:
-        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
-        filename: cirruslabs
+    - name: retrieve latest release metadata for setup-info-generator
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/cirruslabs/setup-info-generator/releases/latest"
+      register: latest_release
+    - name: normalize architecture name reported by Ansible to be Golang-like
+      set_fact:
+        golang_architecture: "{{ mapping.get(ansible_architecture, ansible_architecture) }}"
+      vars:
+        mapping:
+          x86_64: amd64
+          aarch64: arm64
+    - name: figure out setup-info-generator .deb URL
+      set_fact:
+        setup_info_generator_deb_url: "{{
+          latest_release.json.assets |
+          selectattr('name', 'match', '^setup-info-generator_.*_linux_' + golang_architecture + '.deb$') |
+          map(attribute='browser_download_url') |
+          first
+        }}"
     - name: install setup-info-generator
       apt:
-        name: setup-info-generator
+        deb: "{{ setup_info_generator_deb_url }}"
     - name: copy setup info template
       copy:
         src: setup-info-template.json
