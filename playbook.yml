@@ -47,4 +47,5 @@
     - name: install Guest agent for Tart VMs
       dnf:
         name: "{{ tart_guest_agent_base_url }}.rpm"
+        disable_gpg_check: yes
       when: ansible_os_family == 'RedHat'
