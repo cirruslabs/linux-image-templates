@@ -14,34 +14,38 @@
     - name: reboot for the new kernel to take effect and to ensure that a VM is bootable
       reboot:
       when: ansible_distribution == 'Ubuntu'
+
+    # Guest agent for Tart VMs installation: common tasks
+    - name: retrieve latest release metadata for Guest agent for Tart VMs
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/cirruslabs/tart-guest-agent/releases/latest"
+      register: latest_release
+    - name: normalize architecture name reported by Ansible to be Golang-like
+      set_fact:
+        golang_architecture: "{{ mapping.get(ansible_architecture, ansible_architecture) }}"
+      vars:
+        mapping:
+          x86_64: amd64
+          aarch64: arm64
+    - name: figure out Guest agent for Tart VMs base URL for .deb/.rpm's
+      set_fact:
+        tart_guest_agent_base_url: "{{
+          latest_release.json.assets |
+          selectattr('name', 'match', '^tart-guest-agent_.*_linux_' + golang_architecture + '.(deb|rpm)$') |
+          map(attribute='browser_download_url') |
+          first |
+          regex_replace('.(deb|rpm)$', '')
+        }}"
+
     # Guest agent for Tart VMs installation: Debian-based
-    - name: install apt-transport-https and ca-certificates packages
-      apt:
-        name:
-          - apt-transport-https
-          - ca-certificates
-        update_cache: yes
-        cache_valid_time: 3600
-      when: ansible_os_family == 'Debian'
-    - name: add Cirrus Labs repository
-      apt_repository:
-        repo: "deb [trusted=yes] https://apt.fury.io/cirruslabs/ /"
-        filename: cirruslabs
-      when: ansible_os_family == 'Debian'
     - name: install Guest agent for Tart VMs
       apt:
-        name: tart-guest-agent
+        deb: "{{ tart_guest_agent_base_url }}.deb"
       when: ansible_os_family == 'Debian'
 
     # Guest agent for Tart VMs installation: RedHat-based
-    - name: add Cirrus Labs repository
-      yum_repository:
-        name: cirruslabs
-        description: "Cirrus Labs repository"
-        baseurl: "https://yum.fury.io/cirruslabs/"
-        gpgcheck: no
-      when: ansible_os_family == 'RedHat'
     - name: install Guest agent for Tart VMs
       dnf:
-        name: tart-guest-agent
+        name: "{{ tart_guest_agent_base_url }}.rpm"
+        disable_gpg_check: yes
       when: ansible_os_family == 'RedHat'
