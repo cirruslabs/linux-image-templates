@@ -52,6 +52,7 @@ task:
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         URL: https://iso.omarchy.org/omarchy-$VM_RELEASE.iso
+        IMAGE_FORMAT: raw
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
     - name: Debian
@@ -131,7 +132,7 @@ task:
 
   convert_cloud_image_disk_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
-    - qemu-img convert -p -f qcow2 -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
+    - qemu-img convert -p -f ${IMAGE_FORMAT:qcow2} -O raw "$QCOW2_IMAGE" "$RAW_IMAGE"
 
   generate_cloud_init_image_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
