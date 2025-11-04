@@ -45,6 +45,15 @@ task:
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
+    - name: Omarchy
+      env:
+        VM_NAME: "omarchy"
+        VM_RELEASE: "3.1.5"
+        WORKER_NAME: $WORKER_NAME_ARM64
+        VM_ARCH: "arm64"
+        URL: https://iso.omarchy.org/omarchy-$VM_RELEASE.iso
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+        LATEST: latest
     - name: Debian
       env:
         VM_NAME: "debian"
