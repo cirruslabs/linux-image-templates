@@ -71,6 +71,10 @@ build {
     script = "install-actions-runner.sh"
   }
 
+  provisioner "shell" {
+    script = "install-codeql.sh"
+  }
+
   provisioner "ansible" {
     playbook_file = "./playbook-setup-info-generator.yml"
 
