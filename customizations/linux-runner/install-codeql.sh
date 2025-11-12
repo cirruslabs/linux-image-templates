@@ -17,7 +17,7 @@ if [ "$arch" = "x86_64" ]; then
     RUNNER_ARCH="linux64"
 else
     echo "Unknown architecture: $arch"
-    exit 1
+    exit 0
 fi
 
 export AGENT_TOOLSDIRECTORY=$HOME/hostedtoolcache
