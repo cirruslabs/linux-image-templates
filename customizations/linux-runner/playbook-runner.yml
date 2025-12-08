@@ -611,13 +611,8 @@
     # Java[1]
     #
     # [1]: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2204-Readme.md#java
-    - name: install Java 19
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '22.04'
-      apt:
-        name: openjdk-19-jdk-headless
-        install_recommends: false
     - name: install Java 21
-      when: ansible_distribution == 'Ubuntu' and ansible_distribution_version != '22.04'
+      when: ansible_distribution == 'Ubuntu'
       apt:
         name: openjdk-21-jdk-headless
         install_recommends: false
