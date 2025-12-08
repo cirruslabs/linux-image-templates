@@ -22,7 +22,7 @@ variable "vm_name" {
 source "tart-cli" "tart" {
   vm_base_name = "${var.vm_base_name}"
   vm_name = "${var.vm_name}"
-  disk_size_gb = 40
+  disk_size_gb = 50
   headless = false
   disable_vnc = true
   ssh_username = "admin"
