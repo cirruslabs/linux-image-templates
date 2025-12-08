@@ -48,10 +48,10 @@ task:
     - name: Debian
       env:
         VM_NAME: "debian"
-        VM_RELEASE: "bookworm"
+        VM_RELEASE: "trixie"
         WORKER_NAME: $WORKER_NAME_ARM64
         VM_ARCH: "arm64"
-        URL: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2
+        URL: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-arm64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
     - name: Fedora
