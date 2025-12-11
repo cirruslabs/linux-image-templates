@@ -138,7 +138,8 @@ task:
     - |
       if [[ "$URL" == *.xz ]]; then
         echo "Unarchiving xz compressed image..."
-        xz -d --force "$QCOW2_IMAGE"
+        mv "$QCOW2_IMAGE" "$QCOW2_IMAGE.xz"
+        xz -d "$QCOW2_IMAGE.xz"
       fi
 
   convert_cloud_image_disk_script:
