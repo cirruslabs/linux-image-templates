@@ -73,7 +73,7 @@ task:
             URL: "https://download.freebsd.org/releases/VM-IMAGES/15.0-RELEASE/aarch64/Latest/FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.qcow2.xz"
             WORKER_NAME: $WORKER_NAME_ARM64
           - VM_ARCH: "amd64"
-            URL: "https://download.freebsd.org/releases/VM-IMAGES/15.0-RELEASE/amd64/Latest/FreeBSD-15.0-RELEASE-and64-BASIC-CLOUDINIT-zfs.qcow2.xz"
+            URL: "https://download.freebsd.org/releases/VM-IMAGES/15.0-RELEASE/amd64/Latest/FreeBSD-15.0-RELEASE-amd64-BASIC-CLOUDINIT-zfs.qcow2.xz"
             WORKER_NAME: $WORKER_NAME_AMD64
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         CUSTOMIZATION_IMAGE: "freebsd-$VM_ARCH"
