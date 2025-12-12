@@ -131,7 +131,7 @@ task:
 
   download_cloud_image_disk_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
-    - wget --quiet -O "$QCOW2_IMAGE" "$URL" || true
+    - wget -O "$QCOW2_IMAGE" "$URL" || true
 
   unarchive_cloud_image_disk_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
