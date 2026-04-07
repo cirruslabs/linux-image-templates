@@ -820,6 +820,12 @@
         - "build-tools;{{ latest_build_tools_version }}"
       become: no
 
+    - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
+      with_items:
+        - "system-images;android-{{ latest_platforms_android_version }};google_apis;x86_64"
+      become: no
+      when: ansible_architecture == "x86_64"
+
 
     - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
       with_items:
