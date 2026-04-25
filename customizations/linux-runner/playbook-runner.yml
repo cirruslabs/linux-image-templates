@@ -777,15 +777,15 @@
 
     - name: Get the available Android platforms versions
       set_fact:
-        available_platforms_android_versions: "{{ platforms_android_packages.matches | map(attribute='remotePackage') | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | select('regex', '^\\d+(\\.\\d+)*$') | community.general.version_sort }}"
+        available_platforms_android_versions: "{{ platforms_android_packages.matches | map(attribute='remotePackage') | map(attribute='path') | map('regex_replace', '^platforms;android-(.+)$', '\\1') | select('regex', '^\\d+(\\.\\d+)*$') | unique | community.general.version_sort }}"
 
-    - name: Get the two latest Android platforms versions
+    - name: Get Android platform versions 35 and newer
       set_fact:
-        latest_platforms_android_versions: "{{ available_platforms_android_versions[-2:] }}"
+        android_platform_versions: "{{ available_platforms_android_versions | select('version', '35', '>=') | list }}"
 
-    - name: Print latest_platforms_android_versions (for debugging)
+    - name: Print android_platform_versions (for debugging)
       debug:
-        var: latest_platforms_android_versions
+        var: android_platform_versions
 
     - xml:
         xmlstring: "{{ android_repository_xml.content }}"
@@ -824,11 +824,11 @@
       become: no
 
     - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
-      with_items: "{{ latest_platforms_android_versions | map('regex_replace', '^(.*)$', 'platforms;android-\\1') | list }}"
+      with_items: "{{ android_platform_versions | map('regex_replace', '^(.*)$', 'platforms;android-\\1') | list }}"
       become: no
 
     - command: /opt/android-sdk/cmdline-tools/latest/bin/sdkmanager --install "{{ item }}"
-      with_items: "{{ latest_platforms_android_versions | map('regex_replace', '^(.*)$', 'system-images;android-\\1;google_apis;x86_64') | list }}"
+      with_items: "{{ android_platform_versions | map('regex_replace', '^(.*)$', 'system-images;android-\\1;google_apis;x86_64') | list }}"
       become: no
       when: ansible_architecture == "x86_64"
 
