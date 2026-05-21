@@ -63,6 +63,20 @@ task:
         URL: https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
         LATEST: latest
+    - name: FreeBSD ($VM_ARCH)
+      env:
+        VM_NAME: "freebsd"
+        VM_RELEASE: "15"
+        LATEST: latest
+        matrix:
+          - VM_ARCH: "arm64"
+            URL: "https://download.freebsd.org/releases/VM-IMAGES/15.0-RELEASE/aarch64/Latest/FreeBSD-15.0-RELEASE-arm64-aarch64-BASIC-CLOUDINIT-zfs.qcow2.xz"
+            WORKER_NAME: $WORKER_NAME_ARM64
+          - VM_ARCH: "amd64"
+            URL: "https://download.freebsd.org/releases/VM-IMAGES/15.0-RELEASE/amd64/Latest/FreeBSD-15.0-RELEASE-amd64-BASIC-CLOUDINIT-zfs.qcow2.xz"
+            WORKER_NAME: $WORKER_NAME_AMD64
+        USER_DATA_FIXTURE: "cloud-init/user-data.distro-without-admin-group"
+        CUSTOMIZATION_IMAGE: "freebsd-$VM_ARCH"
     - name: Rocky Linux 9
       env:
         VM_NAME: "rocky"
@@ -118,7 +132,16 @@ task:
 
   download_cloud_image_disk_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
-    - wget --quiet -O "$QCOW2_IMAGE" "$URL" || true
+    - wget -O "$QCOW2_IMAGE" "$URL" || true
+
+  unarchive_cloud_image_disk_script:
+    - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
+    - |
+      if [[ "$URL" == *.xz ]]; then
+        echo "Unarchiving xz compressed image..."
+        mv "$QCOW2_IMAGE" "$QCOW2_IMAGE.xz"
+        xz -d "$QCOW2_IMAGE.xz"
+      fi
 
   convert_cloud_image_disk_script:
     - '[ -z "$URL" ] && { echo "No base VM to build"; exit 0; }'
