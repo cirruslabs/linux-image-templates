@@ -1,0 +1,296 @@
+name: Linux Images
+
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Build and push {0}', inputs.image) || github.event.pull_request.title || github.event.head_commit.message || 'Linux Images' }}
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 8 * * 6"
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Image to build and push
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - ubuntu:24.04
+          - ubuntu-amd64:24.04
+          - ubuntu:22.04
+          - ubuntu-amd64:22.04
+          - debian:trixie
+          - fedora:42
+          - rocky:9
+          - ubuntu-runner-arm64:24.04
+          - ubuntu-runner-amd64:24.04
+          - ubuntu-runner-arm64:22.04
+          - ubuntu-runner-amd64:22.04
+          - ubuntu-runner-amd64-gpu:24.04
+          - ubuntu-runner-amd64-gpu:22.04
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: tart-linux-image-builds-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PACKER_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  PACKER_LOG: 1
+  PUBLISH: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+  TART_REGISTRY_HOSTNAME: ghcr.io
+  TART_REGISTRY_USERNAME: ${{ github.actor }}
+  TART_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build-base-images:
+    name: ${{ matrix.name }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, macOS, "${{ matrix.runner_arch }}"]
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu (24.04 arm64)
+            image_id: ubuntu-24-04-arm64
+            dispatch_image: ubuntu:24.04
+            vm_name: ubuntu
+            vm_release: "24.04"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: true
+          - name: Ubuntu (24.04 amd64)
+            image_id: ubuntu-24-04-amd64
+            dispatch_image: ubuntu-amd64:24.04
+            vm_name: ubuntu
+            vm_release: "24.04"
+            vm_arch: amd64
+            runner_arch: X64
+            url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: ""
+            customization_image: ubuntu-amd64
+            vm_base_name: ""
+            latest: true
+          - name: Ubuntu (22.04 arm64)
+            image_id: ubuntu-22-04-arm64
+            dispatch_image: ubuntu:22.04
+            vm_name: ubuntu
+            vm_release: "22.04"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: false
+          - name: Ubuntu (22.04 amd64)
+            image_id: ubuntu-22-04-amd64
+            dispatch_image: ubuntu-amd64:22.04
+            vm_name: ubuntu
+            vm_release: "22.04"
+            vm_arch: amd64
+            runner_arch: X64
+            url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: ""
+            customization_image: ubuntu-amd64
+            vm_base_name: ""
+            latest: false
+          - name: Debian
+            image_id: debian-trixie-arm64
+            dispatch_image: debian:trixie
+            vm_name: debian
+            vm_release: trixie
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-generic-arm64.qcow2
+            user_data_fixture: cloud-init/user-data.distro-without-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: true
+          - name: Fedora
+            image_id: fedora-42-arm64
+            dispatch_image: fedora:42
+            vm_name: fedora
+            vm_release: "42"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://download.fedoraproject.org/pub/fedora/linux/releases/42/Cloud/aarch64/images/Fedora-Cloud-Base-Generic-42-1.1.aarch64.qcow2
+            user_data_fixture: cloud-init/user-data.distro-without-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: true
+          - name: Rocky Linux 9
+            image_id: rocky-9-arm64
+            dispatch_image: rocky:9
+            vm_name: rocky
+            vm_release: "9"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://dl.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base.latest.aarch64.qcow2
+            user_data_fixture: cloud-init/user-data.distro-without-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: true
+    env:
+      CUSTOMIZATION_IMAGE: ${{ matrix.customization_image }}
+      CUSTOMIZATION_PATH: ${{ matrix.customization_path }}
+      LATEST: ${{ matrix.latest }}
+      URL: ${{ matrix.url }}
+      USER_DATA_FIXTURE: ${{ matrix.user_data_fixture }}
+      VM_ARCH: ${{ matrix.vm_arch }}
+      VM_BASE_NAME: ${{ matrix.vm_base_name }}
+      VM_ID: task-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.image_id }}
+      VM_NAME: ${{ matrix.vm_name }}
+      VM_RELEASE: ${{ matrix.vm_release }}
+
+    steps:
+      - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: actions/checkout@v4
+
+      - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: ./.github/actions/build-image
+
+  build-runner-images:
+    name: ${{ matrix.name }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, macOS, "${{ matrix.runner_arch }}"]
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Runner (24.04 arm64)
+            image_id: ubuntu-runner-24-04-arm64
+            dispatch_image: ubuntu-runner-arm64:24.04
+            vm_name: ubuntu
+            vm_release: "24.04"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: customizations/linux-runner
+            customization_image: ubuntu-runner-arm64
+            vm_base_name: ""
+            latest: true
+          - name: Linux Runner (24.04 amd64)
+            image_id: ubuntu-runner-24-04-amd64
+            dispatch_image: ubuntu-runner-amd64:24.04
+            vm_name: ubuntu
+            vm_release: "24.04"
+            vm_arch: amd64
+            runner_arch: X64
+            url: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: customizations/linux-runner
+            customization_image: ubuntu-runner-amd64
+            vm_base_name: ""
+            latest: true
+          - name: Linux Runner (22.04 arm64)
+            image_id: ubuntu-runner-22-04-arm64
+            dispatch_image: ubuntu-runner-arm64:22.04
+            vm_name: ubuntu
+            vm_release: "22.04"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: customizations/linux-runner
+            customization_image: ubuntu-runner-arm64
+            vm_base_name: ""
+            latest: false
+          - name: Linux Runner (22.04 amd64)
+            image_id: ubuntu-runner-22-04-amd64
+            dispatch_image: ubuntu-runner-amd64:22.04
+            vm_name: ubuntu
+            vm_release: "22.04"
+            vm_arch: amd64
+            runner_arch: X64
+            url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+            user_data_fixture: cloud-init/user-data.distro-with-admin-group
+            customization_path: customizations/linux-runner
+            customization_image: ubuntu-runner-amd64
+            vm_base_name: ""
+            latest: false
+    env:
+      CUSTOMIZATION_IMAGE: ${{ matrix.customization_image }}
+      CUSTOMIZATION_PATH: ${{ matrix.customization_path }}
+      LATEST: ${{ matrix.latest }}
+      URL: ${{ matrix.url }}
+      USER_DATA_FIXTURE: ${{ matrix.user_data_fixture }}
+      VM_ARCH: ${{ matrix.vm_arch }}
+      VM_BASE_NAME: ${{ matrix.vm_base_name }}
+      VM_ID: task-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.image_id }}
+      VM_NAME: ${{ matrix.vm_name }}
+      VM_RELEASE: ${{ matrix.vm_release }}
+
+    steps:
+      - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: actions/checkout@v4
+
+      - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: ./.github/actions/build-image
+
+  build-gpu-images:
+    name: ${{ matrix.name }}
+    needs: build-runner-images
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, macOS, X64]
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux Runner w/ GPU (24.04 amd64)
+            image_id: ubuntu-runner-gpu-24-04-amd64
+            dispatch_image: ubuntu-runner-amd64-gpu:24.04
+            vm_release: "24.04"
+            vm_base_name: ghcr.io/cirruslabs/ubuntu-runner-amd64:24.04
+            latest: true
+          - name: Linux Runner w/ GPU (22.04 amd64)
+            image_id: ubuntu-runner-gpu-22-04-amd64
+            dispatch_image: ubuntu-runner-amd64-gpu:22.04
+            vm_release: "22.04"
+            vm_base_name: ghcr.io/cirruslabs/ubuntu-runner-amd64:22.04
+            latest: false
+    env:
+      CUSTOMIZATION_IMAGE: ubuntu-runner-amd64-gpu
+      CUSTOMIZATION_PATH: customizations/linux-runner-gpu
+      LATEST: ${{ matrix.latest }}
+      URL: ""
+      USER_DATA_FIXTURE: cloud-init/user-data.distro-with-admin-group
+      VM_ARCH: amd64
+      VM_BASE_NAME: ${{ matrix.vm_base_name }}
+      VM_ID: task-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.image_id }}
+      VM_NAME: ubuntu
+      VM_RELEASE: ${{ matrix.vm_release }}
+
+    steps:
+      - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: actions/checkout@v4
+
+      - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
+        uses: ./.github/actions/build-image

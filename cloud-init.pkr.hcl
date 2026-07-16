@@ -4,6 +4,10 @@ packer {
       source  = "github.com/cirruslabs/tart"
       version = ">= 1.7.0"
     }
+    ansible = {
+      source  = "github.com/hashicorp/ansible"
+      version = ">= 1.1.1"
+    }
   }
 }
 
