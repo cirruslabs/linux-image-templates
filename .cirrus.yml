@@ -33,17 +33,21 @@ task:
     - "Install dependencies ($WORKER_NAME)"
 
   matrix:
-    - name: Ubuntu $VM_RELEASE
+    - name: Ubuntu ($VM_RELEASE $VM_ARCH)
       env:
         VM_NAME: "ubuntu"
         matrix:
           - VM_RELEASE: "24.04"
-            URL: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+            URL: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-$VM_ARCH.img"
             LATEST: latest
           - VM_RELEASE: "22.04"
-            URL: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-arm64.img
-        WORKER_NAME: $WORKER_NAME_ARM64
-        VM_ARCH: "arm64"
+            URL: "https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-$VM_ARCH.img"
+        matrix:
+          - VM_ARCH: "arm64"
+            WORKER_NAME: $WORKER_NAME_ARM64
+          - VM_ARCH: "amd64"
+            WORKER_NAME: $WORKER_NAME_AMD64
+            CUSTOMIZATION_IMAGE: "ubuntu-amd64"
         USER_DATA_FIXTURE: "cloud-init/user-data.distro-with-admin-group"
     - name: Debian
       env:
