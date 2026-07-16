@@ -1,0 +1,81 @@
+name: Build Linux Image
+description: Build, customize, and optionally publish a Linux Tart image.
+
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: brew install wget qemu cdrtools ansible
+
+    - name: Tool versions
+      shell: bash
+      run: |
+        tart --version
+        packer --version
+
+    - name: Download cloud image disk
+      if: ${{ env.URL != '' }}
+      shell: bash
+      run: wget --quiet -O image.qcow2 "$URL"
+
+    - name: Convert cloud image disk
+      if: ${{ env.URL != '' }}
+      shell: bash
+      run: qemu-img convert -p -f qcow2 -O raw image.qcow2 image.raw
+
+    - name: Generate cloud-init image
+      if: ${{ env.URL != '' }}
+      shell: bash
+      run: |
+        echo "local-hostname: $VM_NAME" > cloud-init/meta-data
+        cp "$USER_DATA_FIXTURE" cloud-init/user-data
+        mkisofs -output cloud-init.iso -volid cidata -joliet -rock cloud-init/
+
+    - name: Create VM
+      if: ${{ env.URL != '' }}
+      shell: bash
+      run: |
+        tart create --linux "$VM_ID"
+        mv image.raw "$HOME/.tart/vms/$VM_ID/disk.img"
+
+    - name: Initialize VM
+      if: ${{ env.URL != '' }}
+      shell: bash
+      run: |
+        packer init .
+        packer build -var "vm_name=$VM_ID" .
+
+    - name: Customize VM
+      if: ${{ env.CUSTOMIZATION_PATH != '' }}
+      shell: bash
+      run: |
+        cd "$CUSTOMIZATION_PATH"
+        packer init .
+        packer build -var "vm_name=$VM_ID" -var "vm_base_name=$VM_BASE_NAME" .
+
+    - name: VM info
+      shell: bash
+      run: tart get "$VM_ID"
+
+    - name: Publish image
+      if: ${{ env.PUBLISH == 'true' }}
+      shell: bash
+      run: |
+        image_name="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
+
+        if [[ "$LATEST" == "true" ]]; then
+          tart push --populate-cache "$VM_ID" \
+            "ghcr.io/cirruslabs/$image_name:latest" \
+            "ghcr.io/cirruslabs/$image_name:$VM_RELEASE"
+        else
+          tart push --populate-cache "$VM_ID" \
+            "ghcr.io/cirruslabs/$image_name:$VM_RELEASE"
+        fi
+
+    - name: Cleanup
+      if: ${{ always() }}
+      shell: bash
+      run: |
+        tart stop "$VM_ID" || true
+        tart delete "$VM_ID" || true
