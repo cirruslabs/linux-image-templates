@@ -1,5 +1,7 @@
 name: Linux Images
 
+run-name: ${{ github.event_name == 'workflow_dispatch' && format('Build and push {0}', inputs.image) || github.event.pull_request.title || github.event.head_commit.message || 'Linux Images' }}
+
 on:
   pull_request:
   push:
@@ -8,6 +10,27 @@ on:
   schedule:
     - cron: "0 8 * * 6"
   workflow_dispatch:
+    inputs:
+      image:
+        description: Image to build and push
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - ubuntu:24.04
+          - ubuntu-amd64:24.04
+          - ubuntu:22.04
+          - ubuntu-amd64:22.04
+          - debian:trixie
+          - fedora:42
+          - rocky:9
+          - ubuntu-runner-arm64:24.04
+          - ubuntu-runner-amd64:24.04
+          - ubuntu-runner-arm64:22.04
+          - ubuntu-runner-amd64:22.04
+          - ubuntu-runner-amd64-gpu:24.04
+          - ubuntu-runner-amd64-gpu:22.04
 
 permissions:
   contents: read
@@ -37,6 +60,7 @@ jobs:
         include:
           - name: Ubuntu (24.04 arm64)
             image_id: ubuntu-24-04-arm64
+            dispatch_image: ubuntu:24.04
             vm_name: ubuntu
             vm_release: "24.04"
             vm_arch: arm64
@@ -49,6 +73,7 @@ jobs:
             latest: true
           - name: Ubuntu (24.04 amd64)
             image_id: ubuntu-24-04-amd64
+            dispatch_image: ubuntu-amd64:24.04
             vm_name: ubuntu
             vm_release: "24.04"
             vm_arch: amd64
@@ -61,6 +86,7 @@ jobs:
             latest: true
           - name: Ubuntu (22.04 arm64)
             image_id: ubuntu-22-04-arm64
+            dispatch_image: ubuntu:22.04
             vm_name: ubuntu
             vm_release: "22.04"
             vm_arch: arm64
@@ -73,6 +99,7 @@ jobs:
             latest: false
           - name: Ubuntu (22.04 amd64)
             image_id: ubuntu-22-04-amd64
+            dispatch_image: ubuntu-amd64:22.04
             vm_name: ubuntu
             vm_release: "22.04"
             vm_arch: amd64
@@ -85,6 +112,7 @@ jobs:
             latest: false
           - name: Debian
             image_id: debian-trixie-arm64
+            dispatch_image: debian:trixie
             vm_name: debian
             vm_release: trixie
             vm_arch: arm64
@@ -97,6 +125,7 @@ jobs:
             latest: true
           - name: Fedora
             image_id: fedora-42-arm64
+            dispatch_image: fedora:42
             vm_name: fedora
             vm_release: "42"
             vm_arch: arm64
@@ -109,6 +138,7 @@ jobs:
             latest: true
           - name: Rocky Linux 9
             image_id: rocky-9-arm64
+            dispatch_image: rocky:9
             vm_name: rocky
             vm_release: "9"
             vm_arch: arm64
@@ -133,9 +163,11 @@ jobs:
 
     steps:
       - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: actions/checkout@v4
 
       - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: ./.github/actions/build-image
 
   build-runner-images:
@@ -149,6 +181,7 @@ jobs:
         include:
           - name: Linux Runner (24.04 arm64)
             image_id: ubuntu-runner-24-04-arm64
+            dispatch_image: ubuntu-runner-arm64:24.04
             vm_name: ubuntu
             vm_release: "24.04"
             vm_arch: arm64
@@ -161,6 +194,7 @@ jobs:
             latest: true
           - name: Linux Runner (24.04 amd64)
             image_id: ubuntu-runner-24-04-amd64
+            dispatch_image: ubuntu-runner-amd64:24.04
             vm_name: ubuntu
             vm_release: "24.04"
             vm_arch: amd64
@@ -173,6 +207,7 @@ jobs:
             latest: true
           - name: Linux Runner (22.04 arm64)
             image_id: ubuntu-runner-22-04-arm64
+            dispatch_image: ubuntu-runner-arm64:22.04
             vm_name: ubuntu
             vm_release: "22.04"
             vm_arch: arm64
@@ -185,6 +220,7 @@ jobs:
             latest: false
           - name: Linux Runner (22.04 amd64)
             image_id: ubuntu-runner-22-04-amd64
+            dispatch_image: ubuntu-runner-amd64:22.04
             vm_name: ubuntu
             vm_release: "22.04"
             vm_arch: amd64
@@ -209,9 +245,11 @@ jobs:
 
     steps:
       - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: actions/checkout@v4
 
       - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: ./.github/actions/build-image
 
   build-gpu-images:
@@ -226,11 +264,13 @@ jobs:
         include:
           - name: Linux Runner w/ GPU (24.04 amd64)
             image_id: ubuntu-runner-gpu-24-04-amd64
+            dispatch_image: ubuntu-runner-amd64-gpu:24.04
             vm_release: "24.04"
             vm_base_name: ghcr.io/cirruslabs/ubuntu-runner-amd64:24.04
             latest: true
           - name: Linux Runner w/ GPU (22.04 amd64)
             image_id: ubuntu-runner-gpu-22-04-amd64
+            dispatch_image: ubuntu-runner-amd64-gpu:22.04
             vm_release: "22.04"
             vm_base_name: ghcr.io/cirruslabs/ubuntu-runner-amd64:22.04
             latest: false
@@ -248,7 +288,9 @@ jobs:
 
     steps:
       - name: Checkout
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: actions/checkout@v4
 
       - name: Build image
+        if: github.event_name != 'workflow_dispatch' || inputs.image == 'all' || inputs.image == matrix.dispatch_image
         uses: ./.github/actions/build-image
