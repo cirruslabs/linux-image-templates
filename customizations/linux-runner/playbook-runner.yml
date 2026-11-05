@@ -574,7 +574,7 @@
 
     - name: add GitHub CLI key
       apt_key:
-        id: 2C6106201985B60E6C7AC87323F3D4EA75716059
+        id: 7F38BBB59D064DBCB3D84D725612B36462313325
         url: "https://cli.github.com/packages/githubcli-archive-keyring.gpg"
         keyring: /etc/apt/trusted.gpg.d/github-cli.gpg
 
