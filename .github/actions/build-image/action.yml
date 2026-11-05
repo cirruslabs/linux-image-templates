@@ -6,6 +6,10 @@ runs:
   steps:
     - name: Install dependencies
       shell: bash
+      env:
+        # Reuse installed tools; new Homebrew bottles are unavailable on Intel macOS.
+        HOMEBREW_NO_AUTO_UPDATE: "1"
+        HOMEBREW_NO_INSTALL_UPGRADE: "1"
       run: brew install wget qemu cdrtools ansible
 
     - name: Tool versions
