@@ -33,8 +33,13 @@ template_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 packer init "$template_dir"
 
 build_dir=$(mktemp -d "${TMPDIR:-/tmp}/omarchy.XXXXXX")
+helper_vm=
 staging_vm=
 cleanup() {
+  if [[ -n $helper_vm ]]; then
+    tart stop "$helper_vm" >/dev/null 2>&1 || true
+    tart delete "$helper_vm" >/dev/null 2>&1 || true
+  fi
   if [[ -n $staging_vm ]]; then
     tart delete "$staging_vm" >/dev/null 2>&1 || true
   fi
@@ -92,6 +97,17 @@ jq -er --arg image "$image" '
   cat "${disk_parts[@]}" | zstd --decompress --sparse -o disk.img
 )
 
+helper_vm="omarchy-prepare-$(uuidgen)"
+TART_NO_AUTO_PRUNE=1 tart clone ghcr.io/cirruslabs/debian:trixie "$helper_vm"
+tart run --no-graphics --no-clipboard --disk "$build_dir/disk.img" "$helper_vm" &
+helper_pid=$!
+tart ip "$helper_vm" --resolver agent --wait 60 >/dev/null
+tart exec -i "$helper_vm" sudo -n bash -se < "$template_dir/prepare-disk.sh"
+tart stop "$helper_vm"
+wait "$helper_pid"
+tart delete "$helper_vm"
+helper_vm=
+
 # Stage the disk before Packer configures it. Tart's rename rejects an existing
 # destination even if another build created it after our initial check.
 staging_vm="omarchy-build-$(uuidgen)"
@@ -103,4 +119,4 @@ if [[ -n ${GITHUB_OUTPUT:-} ]]; then
 fi
 tart rename "$staging_vm" "$vm_name"
 staging_vm=
-echo "Built '$vm_name' from Try Omarchy $release_tag. Clone it before first boot to keep a fresh template."
+echo "Built '$vm_name' from Try Omarchy $release_tag. Fresh clones log in as admin with password admin."
