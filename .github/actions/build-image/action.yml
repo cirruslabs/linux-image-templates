@@ -10,13 +10,19 @@ runs:
         # Reuse installed tools; new Homebrew bottles are unavailable on Intel macOS.
         HOMEBREW_NO_AUTO_UPDATE: "1"
         HOMEBREW_NO_INSTALL_UPGRADE: "1"
-      run: brew install wget qemu cdrtools ansible
+      run: brew install wget qemu cdrtools ansible jq zstd
 
     - name: Tool versions
       shell: bash
       run: |
         tart --version
         packer --version
+
+    - name: Build Omarchy
+      id: build-omarchy
+      if: ${{ env.BUILD_OMARCHY == 'true' }}
+      shell: bash
+      run: ./omarchy/build.sh "$VM_ID"
 
     - name: Download cloud image disk
       if: ${{ env.URL != '' }}
@@ -64,17 +70,20 @@ runs:
 
     - name: Publish image
       if: ${{ env.PUBLISH == 'true' }}
+      env:
+        IMAGE_RELEASE: ${{ steps.build-omarchy.outputs.release_tag || env.VM_RELEASE }}
       shell: bash
       run: |
         image_name="${CUSTOMIZATION_IMAGE:-$VM_NAME}"
+        image_release="${IMAGE_RELEASE:?Missing image release tag}"
 
         if [[ "$LATEST" == "true" ]]; then
           tart push --populate-cache "$VM_ID" \
             "ghcr.io/cirruslabs/$image_name:latest" \
-            "ghcr.io/cirruslabs/$image_name:$VM_RELEASE"
+            "ghcr.io/cirruslabs/$image_name:$image_release"
         else
           tart push --populate-cache "$VM_ID" \
-            "ghcr.io/cirruslabs/$image_name:$VM_RELEASE"
+            "ghcr.io/cirruslabs/$image_name:$image_release"
         fi
 
     - name: Cleanup

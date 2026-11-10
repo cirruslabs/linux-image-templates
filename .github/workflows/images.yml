@@ -25,6 +25,7 @@ on:
           - debian:trixie
           - fedora:42
           - rocky:9
+          - omarchy:latest
           - ubuntu-runner-arm64:24.04
           - ubuntu-runner-amd64:24.04
           - ubuntu-runner-arm64:22.04
@@ -149,7 +150,16 @@ jobs:
             customization_image: ""
             vm_base_name: ""
             latest: true
+          - name: Omarchy (arm64)
+            image_id: omarchy-arm64
+            dispatch_image: omarchy:latest
+            vm_name: omarchy
+            vm_arch: arm64
+            runner_arch: ARM64
+            build_omarchy: true
+            latest: true
     env:
+      BUILD_OMARCHY: ${{ matrix.build_omarchy }}
       CUSTOMIZATION_IMAGE: ${{ matrix.customization_image }}
       CUSTOMIZATION_PATH: ${{ matrix.customization_path }}
       LATEST: ${{ matrix.latest }}
