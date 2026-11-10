@@ -25,8 +25,9 @@ tart clone omarchy omarchy-desktop
 tart run omarchy-desktop
 ```
 
-Press Return at the Omarchy welcome screen and follow the prompts to set up
-your account on the clone.
+On first boot each clone creates the `admin` account with password `admin` and
+sets up its Omarchy desktop. The same account can log in over SSH and run
+`sudo` without a password.
 
 The Linux Images workflow publishes `ghcr.io/cirruslabs/omarchy:latest` and a tag
 matching the Try Omarchy release used for the build. Select `omarchy:latest` to
