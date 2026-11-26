@@ -25,6 +25,7 @@ on:
           - debian:trixie
           - fedora:42
           - rocky:9
+          - almalinux:10
           - omarchy:latest
           - ubuntu-runner-arm64:24.04
           - ubuntu-runner-amd64:24.04
@@ -145,6 +146,19 @@ jobs:
             vm_arch: arm64
             runner_arch: ARM64
             url: https://dl.rockylinux.org/pub/rocky/9/images/aarch64/Rocky-9-GenericCloud-Base.latest.aarch64.qcow2
+            user_data_fixture: cloud-init/user-data.distro-without-admin-group
+            customization_path: ""
+            customization_image: ""
+            vm_base_name: ""
+            latest: true
+          - name: AlmaLinux (10 arm64)
+            image_id: almalinux-10-arm64
+            dispatch_image: almalinux:10
+            vm_name: almalinux
+            vm_release: "10"
+            vm_arch: arm64
+            runner_arch: ARM64
+            url: https://repo.almalinux.org/almalinux/10/cloud/aarch64/images/AlmaLinux-10-GenericCloud-latest.aarch64.qcow2
             user_data_fixture: cloud-init/user-data.distro-without-admin-group
             customization_path: ""
             customization_image: ""
