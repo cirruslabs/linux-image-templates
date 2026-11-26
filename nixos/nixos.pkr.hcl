@@ -62,4 +62,14 @@ build {
       "ansible_python_interpreter=/run/current-system/sw/bin/python3",
     ]
   }
+
+  # Remove build-time SSH identity before capture. NixOS's sshd-keygen service
+  # generates fresh host keys on each clone's first boot.
+  provisioner "shell" {
+    inline = [
+      "sudo rm -f /etc/ssh/ssh_host_*",
+      "test -z \"$(find /etc/ssh -maxdepth 1 -name 'ssh_host_*' -print -quit)\"",
+      "sync",
+    ]
+  }
 }
