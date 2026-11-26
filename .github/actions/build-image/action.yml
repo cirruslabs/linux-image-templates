@@ -24,6 +24,11 @@ runs:
       shell: bash
       run: ./omarchy/build.sh "$VM_ID"
 
+    - name: Build NixOS
+      if: ${{ env.BUILD_NIXOS == 'true' }}
+      shell: bash
+      run: ./nixos/build.sh "$VM_ID"
+
     - name: Download cloud image disk
       if: ${{ env.URL != '' }}
       shell: bash

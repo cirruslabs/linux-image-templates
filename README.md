@@ -10,6 +10,28 @@ The dependency step reuses installed Homebrew tools and installs missing package
 
 Publishing uses the workflow's `GITHUB_TOKEN`. Each destination GHCR package must grant this repository **Write** access through **Package settings → Manage Actions access**, or inherit access from this repository. If publishing fails with `403 permission_denied: write_package`, check these [package access settings](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility#ensuring-workflow-access-to-your-package), even when the workflow already has `packages: write`.
 
+### NixOS
+
+Build a NixOS 26.05 minimal ARM64 image on an Apple Silicon Mac. The
+[builder](nixos/build.sh) verifies the ISO against its published SHA-256 checksum,
+installs the [NixOS configuration](nixos/http/configuration.nix), and runs the
+shared Ansible playbook to install the Tart guest agent in `~admin/.local/bin`.
+
+```sh
+./nixos/build.sh nixos
+tart run nixos
+```
+
+Log in as `admin` with password `admin`; passwordless sudo is enabled. The live
+installer's `nixos` account is not included in the installed image. With the VM
+running, connect using `ssh admin@"$(tart ip nixos --resolver agent --wait 60)"`.
+
+The root partition and filesystem grow automatically on boot after enlarging
+the stopped VM's disk with `tart set nixos --disk-size 30`.
+
+The workflow publishes `ghcr.io/cirruslabs/nixos:26.05` and `:latest`. Select
+`nixos:26.05` to rebuild NixOS on its own.
+
 ### Omarchy
 
 Build a native ARM64 Omarchy desktop template on an Apple Silicon Mac. The

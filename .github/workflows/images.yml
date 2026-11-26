@@ -25,6 +25,7 @@ on:
           - debian:trixie
           - fedora:42
           - rocky:9
+          - nixos:26.05
           - omarchy:latest
           - ubuntu-runner-arm64:24.04
           - ubuntu-runner-amd64:24.04
@@ -150,6 +151,16 @@ jobs:
             customization_image: ""
             vm_base_name: ""
             latest: true
+          - name: NixOS (26.05 arm64)
+            image_id: nixos-26-05-arm64
+            dispatch_image: nixos:26.05
+            vm_name: nixos
+            vm_release: "26.05"
+            vm_arch: arm64
+            runner_arch: ARM64
+            build_nixos: true
+            customization_image: ""
+            latest: true
           - name: Omarchy (arm64)
             image_id: omarchy-arm64
             dispatch_image: omarchy:latest
@@ -159,6 +170,7 @@ jobs:
             build_omarchy: true
             latest: true
     env:
+      BUILD_NIXOS: ${{ matrix.build_nixos }}
       BUILD_OMARCHY: ${{ matrix.build_omarchy }}
       CUSTOMIZATION_IMAGE: ${{ matrix.customization_image }}
       CUSTOMIZATION_PATH: ${{ matrix.customization_path }}

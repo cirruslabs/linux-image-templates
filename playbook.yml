@@ -37,6 +37,16 @@
           regex_replace('.(deb|rpm)$', '')
         }}"
 
+    - name: figure out Guest agent for Tart VMs archive URL
+      set_fact:
+        tart_guest_agent_archive_url: "{{
+          latest_release.json.assets |
+          selectattr('name', 'equalto', 'tart-guest-agent-linux-' + golang_architecture + '.tar.gz') |
+          map(attribute='browser_download_url') |
+          first
+        }}"
+      when: ansible_distribution == 'NixOS'
+
     # Guest agent for Tart VMs installation: Debian-based
     - name: install Guest agent for Tart VMs
       apt:
@@ -49,3 +59,44 @@
         name: "{{ tart_guest_agent_base_url }}.rpm"
         disable_gpg_check: yes
       when: ansible_os_family == 'RedHat'
+
+    # Guest agent for Tart VMs installation: NixOS
+    # NixOS normally installs packaged software through the Nix store. This
+    # prebuilt static binary is the exception, so install it for the service
+    # user in ~/.local/bin instead of creating /usr/local:
+    # https://wiki.nixos.org/wiki/NixOS/en
+    # https://discourse.nixos.org/t/usr-local-bin-equivalent-in-nixos-filesystem/3776
+    - name: install Guest agent for Tart VMs on NixOS
+      when: ansible_distribution == 'NixOS'
+      block:
+        - name: create admin user binary directory
+          ansible.builtin.file:
+            path: /home/admin/.local/bin
+            state: directory
+            owner: admin
+            group: users
+            mode: "0755"
+        - name: download Guest agent for Tart VMs
+          ansible.builtin.get_url:
+            url: "{{ tart_guest_agent_archive_url }}"
+            dest: /tmp/tart-guest-agent.tar.gz
+            mode: "0644"
+        - name: extract Guest agent for Tart VMs
+          ansible.builtin.unarchive:
+            src: /tmp/tart-guest-agent.tar.gz
+            dest: /home/admin/.local/bin
+            include:
+              - tart-guest-agent
+            remote_src: true
+            owner: admin
+            group: users
+        - name: set Guest agent for Tart VMs permissions
+          ansible.builtin.file:
+            path: /home/admin/.local/bin/tart-guest-agent
+            owner: admin
+            group: users
+            mode: "0755"
+        - name: start Guest agent for Tart VMs
+          ansible.builtin.systemd_service:
+            name: tart-guest-agent.service
+            state: started
